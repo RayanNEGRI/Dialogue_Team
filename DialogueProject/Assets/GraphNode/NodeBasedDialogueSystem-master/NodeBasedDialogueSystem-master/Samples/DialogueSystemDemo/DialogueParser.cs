@@ -5,28 +5,48 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Subtegral.DialogueSystem.DataContainers;
+using Subtegral.DialogueSystem.DataContainers; // Nécessaire pour BDD_Dialogue et l'Enum Language
 
 namespace Subtegral.DialogueSystem.Runtime
 {
     public class DialogueParser : MonoBehaviour
     {
+        [Header("Settings")]
+        public Language currentLanguage = Language.French;
+
+        [Header("References")]
         [SerializeField] private DialogueContainer dialogue;
+        [SerializeField] private BDD_Dialogue database;
+
+        [Header("UI")]
         [SerializeField] private TextMeshProUGUI dialogueText;
         [SerializeField] private Button choicePrefab;
         [SerializeField] private Transform buttonContainer;
 
         private void Start()
         {
-            var narrativeData = dialogue.NodeLinks.First(); //Entrypoint node
+            var narrativeData = dialogue.NodeLinks.First();
             ProceedToNarrative(narrativeData.TargetNodeGUID);
         }
 
         private void ProceedToNarrative(string narrativeDataGUID)
         {
-            var text = dialogue.DialogueNodeData.Find(x => x.NodeGUID == narrativeDataGUID).DialogueText;
+            var rawKey = dialogue.DialogueNodeData.Find(x => x.NodeGUID == narrativeDataGUID).DialogueText;
+
+            string translatedText = rawKey;
+
+            if (database != null)
+            {
+                translatedText = database.GetTextByKey(rawKey.Trim(), currentLanguage);
+            }
+            else
+            {
+                Debug.LogWarning("Attention : Aucune BDD_Dialogue assignée dans l'inspecteur du DialogueParser !");
+            }
+
+            dialogueText.text = ProcessProperties(translatedText);
+
             var choices = dialogue.NodeLinks.Where(x => x.BaseNodeGUID == narrativeDataGUID);
-            dialogueText.text = ProcessProperties(text);
             var buttons = buttonContainer.GetComponentsInChildren<Button>();
             for (int i = 0; i < buttons.Length; i++)
             {
@@ -36,6 +56,7 @@ namespace Subtegral.DialogueSystem.Runtime
             foreach (var choice in choices)
             {
                 var button = Instantiate(choicePrefab, buttonContainer);
+     
                 button.GetComponentInChildren<Text>().text = ProcessProperties(choice.PortName);
                 button.onClick.AddListener(() => ProceedToNarrative(choice.TargetNodeGUID));
             }

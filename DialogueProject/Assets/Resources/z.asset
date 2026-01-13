@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
+  m_Name: z
+  m_EditorClassIdentifier: Runtime::Subtegral.DialogueSystem.DataContainers.DialogueContainer
+  NodeLinks:
+  - BaseNodeGUID: 903b948c-b1c5-43b0-8bd2-2a5b077fd3e2
+    PortName: Next
+    TargetNodeGUID: c7c7233e-e0bd-4d65-b506-19d39e714b8a
+  - BaseNodeGUID: c7c7233e-e0bd-4d65-b506-19d39e714b8a
+    PortName: Option 1
+    TargetNodeGUID: d1ffaac0-921c-43ec-b7f3-982403ee071f
+  - BaseNodeGUID: c7c7233e-e0bd-4d65-b506-19d39e714b8a
+    PortName: Option 2
+    TargetNodeGUID: 1b46098f-733c-4e8e-91e6-a977ae2156d7
+  DialogueNodeData:
+  - NodeGUID: d1ffaac0-921c-43ec-b7f3-982403ee071f
+    DialogueText: slt
+    Position: {x: 662, y: 200}
+  - NodeGUID: 1b46098f-733c-4e8e-91e6-a977ae2156d7
+    DialogueText: arv
+    Position: {x: 662, y: 320}
+  - NodeGUID: c7c7233e-e0bd-4d65-b506-19d39e714b8a
+    DialogueText: bjr
+    Position: {x: 309, y: 200}
+  ExposedProperties: []
+  CommentBlockData: []

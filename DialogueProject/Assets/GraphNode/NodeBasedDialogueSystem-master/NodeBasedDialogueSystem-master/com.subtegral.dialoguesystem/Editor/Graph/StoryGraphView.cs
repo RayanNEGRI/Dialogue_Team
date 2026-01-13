@@ -5,6 +5,7 @@ using System.Linq;
 using Subtegral.DialogueSystem.DataContainers;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
@@ -40,7 +41,6 @@ namespace Subtegral.DialogueSystem.Editor
             AddSearchWindow(editorWindow);
         }
 
-
         private void AddSearchWindow(StoryGraph editorWindow)
         {
             _searchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
@@ -48,7 +48,6 @@ namespace Subtegral.DialogueSystem.Editor
             nodeCreationRequest = context =>
                 SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
         }
-
 
         public void ClearBlackBoardAndExposedProperties()
         {
@@ -58,7 +57,7 @@ namespace Subtegral.DialogueSystem.Editor
 
         public Group CreateCommentBlock(Rect rect, CommentBlockData commentBlockData = null)
         {
-            if(commentBlockData==null)
+            if (commentBlockData == null)
                 commentBlockData = new CommentBlockData();
             var group = new Group
             {
@@ -86,7 +85,7 @@ namespace Subtegral.DialogueSystem.Editor
             ExposedProperties.Add(item);
 
             var container = new VisualElement();
-            var field = new BlackboardField {text = localPropertyName, typeText = "string"};
+            var field = new BlackboardField { text = localPropertyName, typeText = "string" };
             container.Add(field);
 
             var propertyValueTextField = new TextField("Value:")
@@ -137,17 +136,53 @@ namespace Subtegral.DialogueSystem.Editor
             tempDialogueNode.inputContainer.Add(inputPort);
             tempDialogueNode.RefreshExpandedState();
             tempDialogueNode.RefreshPorts();
-            tempDialogueNode.SetPosition(new Rect(position,
-                DefaultNodeSize)); //To-Do: implement screen center instantiation positioning
+            tempDialogueNode.SetPosition(new Rect(position, DefaultNodeSize));
 
-            var textField = new TextField("");
-            textField.RegisterValueChangedCallback(evt =>
+            var bdd = Resources.Load<BDD_Dialogue>("BDD_Dialogue");
+
+            if (bdd != null && bdd.Entries.Count > 0)
             {
-                tempDialogueNode.DialogueText = evt.newValue;
-                tempDialogueNode.title = evt.newValue;
-            });
-            textField.SetValueWithoutNotify(tempDialogueNode.title);
-            tempDialogueNode.mainContainer.Add(textField);
+                List<string> displayOptions = new List<string>();
+                foreach (var entry in bdd.Entries)
+                {
+                    if (!string.IsNullOrEmpty(entry.key))
+                        displayOptions.Add(entry.key);
+                }
+
+                if (displayOptions.Count > 0)
+                {
+                    string defaultValue = displayOptions[0];
+
+                    if (displayOptions.Contains(nodeName))
+                    {
+                        defaultValue = nodeName;
+                    }
+
+                    var popup = new PopupField<string>("Dialogue Key", displayOptions, defaultValue);
+
+                    popup.RegisterValueChangedCallback(evt =>
+                    {
+                        tempDialogueNode.DialogueText = evt.newValue;
+                        tempDialogueNode.title = evt.newValue;
+                    });
+
+                    tempDialogueNode.DialogueText = defaultValue;
+                    tempDialogueNode.title = defaultValue;
+
+                    tempDialogueNode.mainContainer.Add(popup);
+                }
+                else
+                {
+                    // Fallback si la BDD est vide mais existe
+                    AddStandardTextField(tempDialogueNode);
+                }
+            }
+            else
+            {
+                // Fallback si la BDD n'est pas trouvée
+                AddStandardTextField(tempDialogueNode);
+                Debug.LogWarning("BDD_Dialogue introuvable dans Resources ou vide !");
+            }
 
             var button = new Button(() => { AddChoicePort(tempDialogueNode); })
             {
@@ -157,6 +192,17 @@ namespace Subtegral.DialogueSystem.Editor
             return tempDialogueNode;
         }
 
+        private void AddStandardTextField(DialogueNode node)
+        {
+            var textField = new TextField("Texte Libre:");
+            textField.RegisterValueChangedCallback(evt =>
+            {
+                node.DialogueText = evt.newValue;
+                node.title = evt.newValue;
+            });
+            textField.SetValueWithoutNotify(node.title);
+            node.mainContainer.Add(textField);
+        }
 
         public void AddChoicePort(DialogueNode nodeCache, string overriddenPortName = "")
         {
