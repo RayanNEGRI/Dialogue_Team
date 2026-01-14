@@ -10,30 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
-  m_Name: Dialogues_en
+  m_Name: Dialogues_fr
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
   m_LocaleId:
-    m_Code: en
+    m_Code: fr
   m_SharedData: {fileID: 11400000, guid: e6e2bf121cc2deb4099984f23f50c0b7, type: 2}
   m_Metadata:
     m_Items: []
-  m_TableData:
-  - m_Id: 248391905988610
-    m_Localized: hey
-    m_Metadata:
-      m_Items: []
-  - m_Id: 248391905988611
-    m_Localized: goodbye
-    m_Metadata:
-      m_Items: []
-  - m_Id: 248391905988609
-    m_Localized: welcome
-    m_Metadata:
-      m_Items: []
-  - m_Id: 248391905988608
-    m_Localized: hello
-    m_Metadata:
-      m_Items: []
+  m_TableData: []
   references:
     version: 2
     RefIds: []

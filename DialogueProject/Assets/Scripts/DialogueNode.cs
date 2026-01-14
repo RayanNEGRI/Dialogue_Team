@@ -11,9 +11,5 @@ namespace Subtegral.DialogueSystem.Editor
         public string DialogueText;
         public string GUID;
         public bool EntyPoint = false;
-
-        // Ajouts pour le Speaker
-        public ScriptableObject Speaker;
-        public string MoodKey;
     }
 }

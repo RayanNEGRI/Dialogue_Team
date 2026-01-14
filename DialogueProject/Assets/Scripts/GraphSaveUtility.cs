@@ -76,8 +76,6 @@ namespace Subtegral.DialogueSystem.Editor
                     NodeGUID = node.GUID,
                     DialogueText = node.DialogueText,
                     Position = node.GetPosition().position,
-                    Speaker = node.Speaker,
-                    MoodKey = node.MoodKey
                 });
             }
             return true;
@@ -154,8 +152,6 @@ namespace Subtegral.DialogueSystem.Editor
             {
                 var tempNode = _graphView.CreateNode(perNode.DialogueText, perNode.Position);
                 tempNode.GUID = perNode.NodeGUID;
-                tempNode.Speaker = perNode.Speaker;
-                tempNode.MoodKey = perNode.MoodKey;
 
                 _graphView.AddElement(tempNode);
 

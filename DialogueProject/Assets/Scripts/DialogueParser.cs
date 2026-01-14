@@ -60,37 +60,6 @@ namespace Subtegral.DialogueSystem.Runtime
             // 1. On appelle la traduction Unity
             UpdateText(rawKey);
 
-            // 2. Gestion du Speaker (inchangé)
-            //var speakerProfile = nodeData.Speaker as BDD_Speaker;
-            //if (speakerProfile != null)
-            //{
-            //    if (characterNameText != null)
-            //    {
-            //        characterNameText.text = speakerProfile.CharacterName;
-            //        characterNameText.color = speakerProfile.NameColor;
-            //    }
-
-            //    var currentMood = speakerProfile.Moods.Find(m => m.MoodName == nodeData.MoodKey);
-            //    if (!string.IsNullOrEmpty(currentMood.MoodName))
-            //    {
-            //        if (portraitImage != null && currentMood.Portrait != null)
-            //        {
-            //            portraitImage.sprite = currentMood.Portrait;
-            //            portraitImage.gameObject.SetActive(true);
-            //        }
-            //        if (audioSource != null && currentMood.VoiceSample != null)
-            //        {
-            //            audioSource.Stop();
-            //            audioSource.PlayOneShot(currentMood.VoiceSample);
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    if (characterNameText != null) characterNameText.text = "";
-            //    if (portraitImage != null) portraitImage.gameObject.SetActive(false);
-            //}
-
             // 3. Gestion des Boutons
             var choices = dialogue.NodeLinks.Where(x => x.BaseNodeGUID == narrativeDataGUID);
             var buttons = buttonContainer.GetComponentsInChildren<Button>();

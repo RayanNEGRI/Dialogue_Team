@@ -16,24 +16,32 @@ MonoBehaviour:
   - key: bnjr_1
     translations:
     - languageCode: en
-      text: ben
+      text: hello
     - languageCode: fr-FR
       text: bonjour
+    - languageCode: de
+      text: guten morgen
   - key: bnvn_1
     translations:
     - languageCode: en
-      text: 
+      text: welcome
     - languageCode: fr-FR
       text: bienvenu
+    - languageCode: de
+      text: willkommen
   - key: slt_1
     translations:
     - languageCode: en
-      text: 
+      text: hey
     - languageCode: fr-FR
       text: salut
+    - languageCode: de
+      text: hallo
   - key: rvr_1
     translations:
     - languageCode: en
-      text: 
+      text: goodbye
     - languageCode: fr-FR
       text: aurevoir
+    - languageCode: de
+      text: auf wiedersehen
