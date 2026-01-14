@@ -4,7 +4,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Subtegral.DialogueSystem.DataContainers;
-// Ces deux lignes sont OBLIGATOIRES pour le nouveau système
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
@@ -13,20 +12,18 @@ namespace Subtegral.DialogueSystem.Runtime
     public class DialogueParser : MonoBehaviour
     {
         [Header("Settings")]
-        // Mets ici EXACTEMENT le nom de la table que tu as créée à l'Etape 1 (ex: "Dialogues")
         [SerializeField] private string tableName = "Dialogues";
 
         [Header("References")]
         [SerializeField] private DialogueContainer dialogue;
-        // On n'a plus besoin de "BDD_Dialogue database" ici, Unity s'en occupe !
 
         [Header("UI Text")]
         [SerializeField] private TextMeshProUGUI dialogueText;
-        [SerializeField] private TextMeshProUGUI characterNameText;
+        //[SerializeField] private TextMeshProUGUI characterNameText;
 
         [Header("UI Visuals")]
-        [SerializeField] private Image portraitImage;
-        [SerializeField] private AudioSource audioSource;
+        //[SerializeField] private Image portraitImage;
+        //[SerializeField] private AudioSource audioSource;
 
         [Header("Choices")]
         [SerializeField] private Button choicePrefab;
@@ -38,10 +35,8 @@ namespace Subtegral.DialogueSystem.Runtime
             ProceedToNarrative(narrativeData.TargetNodeGUID);
         }
 
-        // --- NOUVELLE FONCTION POUR CHARGER LE TEXTE ---
         private void UpdateText(string key)
         {
-            // On demande à Unity de chercher la clé dans la table "Dialogues"
             var op = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(tableName, key);
 
             if (op.IsDone)
@@ -50,7 +45,6 @@ namespace Subtegral.DialogueSystem.Runtime
             }
             else
             {
-                // Si ça charge encore, on attend le résultat
                 op.Completed += (handle) =>
                 {
                     dialogueText.text = ProcessProperties(handle.Result);

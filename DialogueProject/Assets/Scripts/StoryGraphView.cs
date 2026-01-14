@@ -15,7 +15,7 @@ namespace Subtegral.DialogueSystem.Editor
 {
     public class StoryGraphView : GraphView
     {
-        public readonly Vector2 DefaultNodeSize = new Vector2(200, 250); // J'ai agrandi un peu la hauteur par défaut
+        public readonly Vector2 DefaultNodeSize = new Vector2(200, 250);
         public readonly Vector2 DefaultCommentBlockSize = new Vector2(300, 200);
         public DialogueNode EntryPointNode;
         public Blackboard Blackboard = new Blackboard();
@@ -24,7 +24,19 @@ namespace Subtegral.DialogueSystem.Editor
 
         public StoryGraphView(StoryGraph editorWindow)
         {
-            styleSheets.Add(Resources.Load<StyleSheet>("NarrativeGraph"));
+            // --- MODIFICATION SECURITE (Evite le crash si le fichier manque) ---
+            var graphStyle = Resources.Load<StyleSheet>("NarrativeGraph");
+            if (graphStyle != null)
+            {
+                styleSheets.Add(graphStyle);
+            }
+            else
+            {
+                // On log un warning pour te rappeler de déplacer le fichier, mais ça ne plante plus
+                Debug.LogWarning("⚠️ Fichier 'NarrativeGraph.uss' introuvable dans un dossier 'Resources'. Le graphe sera visuellement basique.");
+            }
+            // -------------------------------------------------------------------
+
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
 
             this.AddManipulator(new ContentDragger());
@@ -130,7 +142,15 @@ namespace Subtegral.DialogueSystem.Editor
                 DialogueText = nodeName,
                 GUID = Guid.NewGuid().ToString()
             };
-            tempDialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
+
+            // --- MODIFICATION SECURITE ---
+            var nodeStyle = Resources.Load<StyleSheet>("Node");
+            if (nodeStyle != null)
+            {
+                tempDialogueNode.styleSheets.Add(nodeStyle);
+            }
+            // -----------------------------
+
             var inputPort = GetPortInstance(tempDialogueNode, Direction.Input, Port.Capacity.Multi);
             inputPort.portName = "Input";
             tempDialogueNode.inputContainer.Add(inputPort);
@@ -138,77 +158,48 @@ namespace Subtegral.DialogueSystem.Editor
             tempDialogueNode.RefreshPorts();
             tempDialogueNode.SetPosition(new Rect(position, DefaultNodeSize));
 
+            // --- LOGIQUE BDD AUTOMATIQUE ---
+            var guids = AssetDatabase.FindAssets("t:BDD_Dialogue");
+            BDD_Dialogue bdd = null;
+            if (guids.Length > 0)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                bdd = AssetDatabase.LoadAssetAtPath<BDD_Dialogue>(path);
+            }
 
+            if (bdd != null && bdd.Entries != null && bdd.Entries.Count > 0)
+            {
+                List<string> displayOptions = bdd.Entries.Select(x => x.key).ToList();
+                string defaultValue = displayOptions[0];
 
-            //if (bdd != null && bdd.Entries.Count > 0)
-            //{
-            //    List<string> displayOptions = new List<string>();
-            //    foreach (var entry in bdd.Entries)
-            //    {
-            //        if (!string.IsNullOrEmpty(entry.key))
-            //            displayOptions.Add(entry.key);
-            //    }
+                if (displayOptions.Contains(nodeName))
+                {
+                    defaultValue = nodeName;
+                }
+                else if (nodeName != "Dialogue Node" && !string.IsNullOrEmpty(nodeName))
+                {
+                    displayOptions.Insert(0, nodeName);
+                    defaultValue = nodeName;
+                }
 
-            //    if (displayOptions.Count > 0)
-            //    {
-            //        string defaultValue = displayOptions[0];
-            //        if (displayOptions.Contains(nodeName))
-            //        {
-            //            defaultValue = nodeName;
-            //        }
+                var popup = new PopupField<string>("Clé Dialogue", displayOptions, defaultValue);
 
-            //        var popup = new PopupField<string>("Dialogue Key", displayOptions, defaultValue);
+                popup.RegisterValueChangedCallback(evt =>
+                {
+                    tempDialogueNode.DialogueText = evt.newValue;
+                    tempDialogueNode.title = evt.newValue;
+                });
 
-            //        popup.RegisterValueChangedCallback(evt =>
-            //        {
-            //            tempDialogueNode.DialogueText = evt.newValue;
-            //            tempDialogueNode.title = evt.newValue;
-            //        });
+                tempDialogueNode.DialogueText = defaultValue;
+                tempDialogueNode.title = defaultValue;
 
-            //        tempDialogueNode.DialogueText = defaultValue;
-            //        tempDialogueNode.title = defaultValue;
-
-            //        tempDialogueNode.mainContainer.Add(popup);
-            //    }
-            //    else
-            //    {
-            //        AddStandardTextField(tempDialogueNode);
-            //    }
-            //}
-            //else
-            //{
-            //    AddStandardTextField(tempDialogueNode);
-            //    Debug.LogWarning("BDD_Dialogue introuvable dans Resources ou vide !");
-            //}
-            //// --- FIN LOGIQUE BDD ---
-
-            //// --- DEBUT LOGIQUE SPEAKER (NOUVEAU) ---
-            //// 1. Champ pour choisir le Speaker (ObjectField)
-            //var speakerField = new ObjectField("Speaker")
-            //{
-            //    objectType = typeof(BDD_Speaker),
-            //    allowSceneObjects = false,
-            //    value = tempDialogueNode.Speaker // Assure-toi que Speaker existe dans DialogueNode !
-            //};
-
-            //speakerField.RegisterValueChangedCallback(evt =>
-            //{
-            //    tempDialogueNode.Speaker = (BDD_Speaker)evt.newValue;
-            //});
-            //tempDialogueNode.mainContainer.Add(speakerField);
-
-            //// 2. Champ pour l'Humeur (Texte simple)
-            //var moodField = new TextField("Humeur (ex: Colere)")
-            //{
-            //    value = tempDialogueNode.MoodKey // Assure-toi que MoodKey existe dans DialogueNode !
-            //};
-            //moodField.RegisterValueChangedCallback(evt =>
-            //{
-            //    tempDialogueNode.MoodKey = evt.newValue;
-            //});
-            //tempDialogueNode.mainContainer.Add(moodField);
-            //// --- FIN LOGIQUE SPEAKER ---
-
+                tempDialogueNode.mainContainer.Add(popup);
+            }
+            else
+            {
+                AddStandardTextField(tempDialogueNode);
+            }
+            // --- FIN LOGIQUE BDD ---
 
             var button = new Button(() => { AddChoicePort(tempDialogueNode); })
             {
@@ -240,7 +231,6 @@ namespace Subtegral.DialogueSystem.Editor
             var outputPortName = string.IsNullOrEmpty(overriddenPortName)
                 ? $"Option {outputPortCount + 1}"
                 : overriddenPortName;
-
 
             var textField = new TextField()
             {
