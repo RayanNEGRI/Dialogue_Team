@@ -10,6 +10,6 @@ namespace Subtegral.DialogueSystem.Editor
     {
         public string DialogueText;
         public string GUID;
-        public bool EntyPoint = false;
+        public bool EntyPoint = false; 
     }
 }

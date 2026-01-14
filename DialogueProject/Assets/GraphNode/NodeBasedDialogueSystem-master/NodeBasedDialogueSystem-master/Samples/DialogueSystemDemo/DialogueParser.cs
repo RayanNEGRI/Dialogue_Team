@@ -1,25 +1,34 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Subtegral.DialogueSystem.DataContainers; // Nécessaire pour BDD_Dialogue et l'Enum Language
+using Subtegral.DialogueSystem.DataContainers;
+// Ces deux lignes sont OBLIGATOIRES pour le nouveau système
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 namespace Subtegral.DialogueSystem.Runtime
 {
     public class DialogueParser : MonoBehaviour
     {
         [Header("Settings")]
-        public Language currentLanguage = Language.French;
+        // Mets ici EXACTEMENT le nom de la table que tu as créée à l'Etape 1 (ex: "Dialogues")
+        [SerializeField] private string tableName = "Dialogues";
 
         [Header("References")]
         [SerializeField] private DialogueContainer dialogue;
-        [SerializeField] private BDD_Dialogue database;
+        // On n'a plus besoin de "BDD_Dialogue database" ici, Unity s'en occupe !
 
-        [Header("UI")]
+        [Header("UI Text")]
         [SerializeField] private TextMeshProUGUI dialogueText;
+        [SerializeField] private TextMeshProUGUI characterNameText;
+
+        [Header("UI Visuals")]
+        [SerializeField] private Image portraitImage;
+        [SerializeField] private AudioSource audioSource;
+
+        [Header("Choices")]
         [SerializeField] private Button choicePrefab;
         [SerializeField] private Transform buttonContainer;
 
@@ -29,34 +38,74 @@ namespace Subtegral.DialogueSystem.Runtime
             ProceedToNarrative(narrativeData.TargetNodeGUID);
         }
 
-        private void ProceedToNarrative(string narrativeDataGUID)
+        // --- NOUVELLE FONCTION POUR CHARGER LE TEXTE ---
+        private void UpdateText(string key)
         {
-            var rawKey = dialogue.DialogueNodeData.Find(x => x.NodeGUID == narrativeDataGUID).DialogueText;
+            // On demande à Unity de chercher la clé dans la table "Dialogues"
+            var op = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(tableName, key);
 
-            string translatedText = rawKey;
-
-            if (database != null)
+            if (op.IsDone)
             {
-                translatedText = database.GetTextByKey(rawKey.Trim(), currentLanguage);
+                dialogueText.text = ProcessProperties(op.Result);
             }
             else
             {
-                Debug.LogWarning("Attention : Aucune BDD_Dialogue assignée dans l'inspecteur du DialogueParser !");
+                // Si ça charge encore, on attend le résultat
+                op.Completed += (handle) =>
+                {
+                    dialogueText.text = ProcessProperties(handle.Result);
+                };
             }
+        }
 
-            dialogueText.text = ProcessProperties(translatedText);
+        private void ProceedToNarrative(string narrativeDataGUID)
+        {
+            var nodeData = dialogue.DialogueNodeData.Find(x => x.NodeGUID == narrativeDataGUID);
+            var rawKey = nodeData.DialogueText.Trim(); // Ta clé (ex: "bjr")
 
+            // 1. On appelle la traduction Unity
+            UpdateText(rawKey);
+
+            // 2. Gestion du Speaker (inchangé)
+            //var speakerProfile = nodeData.Speaker as BDD_Speaker;
+            //if (speakerProfile != null)
+            //{
+            //    if (characterNameText != null)
+            //    {
+            //        characterNameText.text = speakerProfile.CharacterName;
+            //        characterNameText.color = speakerProfile.NameColor;
+            //    }
+
+            //    var currentMood = speakerProfile.Moods.Find(m => m.MoodName == nodeData.MoodKey);
+            //    if (!string.IsNullOrEmpty(currentMood.MoodName))
+            //    {
+            //        if (portraitImage != null && currentMood.Portrait != null)
+            //        {
+            //            portraitImage.sprite = currentMood.Portrait;
+            //            portraitImage.gameObject.SetActive(true);
+            //        }
+            //        if (audioSource != null && currentMood.VoiceSample != null)
+            //        {
+            //            audioSource.Stop();
+            //            audioSource.PlayOneShot(currentMood.VoiceSample);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    if (characterNameText != null) characterNameText.text = "";
+            //    if (portraitImage != null) portraitImage.gameObject.SetActive(false);
+            //}
+
+            // 3. Gestion des Boutons
             var choices = dialogue.NodeLinks.Where(x => x.BaseNodeGUID == narrativeDataGUID);
             var buttons = buttonContainer.GetComponentsInChildren<Button>();
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Destroy(buttons[i].gameObject);
-            }
+            for (int i = 0; i < buttons.Length; i++) Destroy(buttons[i].gameObject);
 
             foreach (var choice in choices)
             {
                 var button = Instantiate(choicePrefab, buttonContainer);
-     
+                // Note : Pour l'instant les choix affichent la clé brute.
                 button.GetComponentInChildren<Text>().text = ProcessProperties(choice.PortName);
                 button.onClick.AddListener(() => ProceedToNarrative(choice.TargetNodeGUID));
             }

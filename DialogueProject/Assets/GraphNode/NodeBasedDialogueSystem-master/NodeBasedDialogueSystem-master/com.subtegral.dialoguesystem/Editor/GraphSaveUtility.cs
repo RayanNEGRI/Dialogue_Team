@@ -44,12 +44,12 @@ namespace Subtegral.DialogueSystem.Editor
 
             UnityEngine.Object loadedAsset = AssetDatabase.LoadAssetAtPath($"Assets/Resources/{fileName}.asset", typeof(DialogueContainer));
 
-            if (loadedAsset == null || !AssetDatabase.Contains(loadedAsset)) 
-			{
+            if (loadedAsset == null || !AssetDatabase.Contains(loadedAsset))
+            {
                 AssetDatabase.CreateAsset(dialogueContainerObject, $"Assets/Resources/{fileName}.asset");
             }
-            else 
-			{
+            else
+            {
                 DialogueContainer container = loadedAsset as DialogueContainer;
                 container.NodeLinks = dialogueContainerObject.NodeLinks;
                 container.DialogueNodeData = dialogueContainerObject.DialogueNodeData;
@@ -83,7 +83,7 @@ namespace Subtegral.DialogueSystem.Editor
                 {
                     NodeGUID = node.GUID,
                     DialogueText = node.DialogueText,
-                    Position = node.GetPosition().position
+                    Position = node.GetPosition().position,
                 });
             }
 
@@ -122,15 +122,12 @@ namespace Subtegral.DialogueSystem.Editor
             }
 
             ClearGraph();
-            GenerateDialogueNodes();
+            //GenerateDialogueNodes();
             ConnectDialogueNodes();
             AddExposedProperties();
             GenerateCommentBlocks();
         }
 
-        /// <summary>
-        /// Set Entry point GUID then Get All Nodes, remove all and their edges. Leave only the entrypoint node. (Remove its edge too)
-        /// </summary>
         private void ClearGraph()
         {
             Nodes.Find(x => x.EntyPoint).GUID = _dialogueContainer.NodeLinks[0].BaseNodeGUID;
@@ -143,33 +140,34 @@ namespace Subtegral.DialogueSystem.Editor
             }
         }
 
-        /// <summary>
-        /// Create All serialized nodes and assign their guid and dialogue text to them
-        /// </summary>
-        private void GenerateDialogueNodes()
-        {
-            foreach (var perNode in _dialogueContainer.DialogueNodeData)
-            {
-                var tempNode = _graphView.CreateNode(perNode.DialogueText, Vector2.zero);
-                tempNode.GUID = perNode.NodeGUID;
-                _graphView.AddElement(tempNode);
+        //private void GenerateDialogueNodes()
+        //{
+        //    foreach (var perNode in _dialogueContainer.DialogueNodeData)
+        //    {
+        //        var tempNode = _graphView.CreateNode(perNode.DialogueText, Vector2.zero);
+        //        tempNode.GUID = perNode.NodeGUID;
 
-                var nodePorts = _dialogueContainer.NodeLinks.Where(x => x.BaseNodeGUID == perNode.NodeGUID).ToList();
-                nodePorts.ForEach(x => _graphView.AddChoicePort(tempNode, x.PortName));
-            }
-        }
+        //        tempNode.Speaker = perNode.Speaker as BDD_Speaker;
+        //        tempNode.MoodKey = perNode.MoodKey;
+
+        //        _graphView.AddElement(tempNode);
+
+        //        var nodePorts = _dialogueContainer.NodeLinks.Where(x => x.BaseNodeGUID == perNode.NodeGUID).ToList();
+        //        nodePorts.ForEach(x => _graphView.AddChoicePort(tempNode, x.PortName));
+        //    }
+        //}
 
         private void ConnectDialogueNodes()
         {
             for (var i = 0; i < Nodes.Count; i++)
             {
-                var k = i; //Prevent access to modified closure
+                var k = i;
                 var connections = _dialogueContainer.NodeLinks.Where(x => x.BaseNodeGUID == Nodes[k].GUID).ToList();
                 for (var j = 0; j < connections.Count(); j++)
                 {
                     var targetNodeGUID = connections[j].TargetNodeGUID;
                     var targetNode = Nodes.First(x => x.GUID == targetNodeGUID);
-                    LinkNodesTogether(Nodes[i].outputContainer[j].Q<Port>(), (Port) targetNode.inputContainer[0]);
+                    LinkNodesTogether(Nodes[i].outputContainer[j].Q<Port>(), (Port)targetNode.inputContainer[0]);
 
                     targetNode.SetPosition(new Rect(
                         _dialogueContainer.DialogueNodeData.First(x => x.NodeGUID == targetNodeGUID).Position,
@@ -208,10 +206,11 @@ namespace Subtegral.DialogueSystem.Editor
 
             foreach (var commentBlockData in _dialogueContainer.CommentBlockData)
             {
-               var block = _graphView.CreateCommentBlock(new Rect(commentBlockData.Position, _graphView.DefaultCommentBlockSize),
-                    commentBlockData);
-               block.AddElements(Nodes.Where(x=>commentBlockData.ChildNodes.Contains(x.GUID)));
+                var block = _graphView.CreateCommentBlock(new Rect(commentBlockData.Position, _graphView.DefaultCommentBlockSize),
+                     commentBlockData);
+                block.AddElements(Nodes.Where(x => commentBlockData.ChildNodes.Contains(x.GUID)));
             }
         }
     }
 }
+
