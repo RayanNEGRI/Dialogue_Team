@@ -10,32 +10,32 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
-  m_Name: j
+  m_Name: z
   m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
   NodeLinks:
-  - BaseNodeGUID: 41c33d01-fdda-449a-a7d3-8e135d2897be
+  - BaseNodeGUID: 9108a375-42f9-41b6-ae85-2cbb3b4ee9f5
     PortName: Next
-    TargetNodeGUID: a2b1ec9e-60db-46a1-bd54-29d46215ff79
-  - BaseNodeGUID: a2b1ec9e-60db-46a1-bd54-29d46215ff79
+    TargetNodeGUID: 3a740ae0-8ec6-4aad-a2b2-958d5e784bb5
+  - BaseNodeGUID: 3a740ae0-8ec6-4aad-a2b2-958d5e784bb5
     PortName: Option 2
-    TargetNodeGUID: 0beee8bd-0842-4226-83bb-d032ba99b8be
-  - BaseNodeGUID: a2b1ec9e-60db-46a1-bd54-29d46215ff79
+    TargetNodeGUID: e071907a-efef-46b0-826f-2ed9790af209
+  - BaseNodeGUID: 3a740ae0-8ec6-4aad-a2b2-958d5e784bb5
     PortName: Option 1
-    TargetNodeGUID: 619341b4-68fc-43ac-b008-4ae43c03d77c
+    TargetNodeGUID: d41f820b-492c-4a6a-b79d-55a85ba6d971
   DialogueNodeData:
-  - NodeGUID: a2b1ec9e-60db-46a1-bd54-29d46215ff79
+  - NodeGUID: 3a740ae0-8ec6-4aad-a2b2-958d5e784bb5
     DialogueText: bnjr
-    Position: {x: 261, y: 200}
+    Position: {x: 257, y: 200}
     Speaker: {fileID: 0}
     MoodKey: 
-  - NodeGUID: 619341b4-68fc-43ac-b008-4ae43c03d77c
-    DialogueText: slt
-    Position: {x: 517, y: 104}
-    Speaker: {fileID: 0}
-    MoodKey: 
-  - NodeGUID: 0beee8bd-0842-4226-83bb-d032ba99b8be
+  - NodeGUID: d41f820b-492c-4a6a-b79d-55a85ba6d971
     DialogueText: bnvn
-    Position: {x: 517, y: 277}
+    Position: {x: 530, y: 88}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: e071907a-efef-46b0-826f-2ed9790af209
+    DialogueText: slt
+    Position: {x: 530, y: 296}
     Speaker: {fileID: 0}
     MoodKey: 
   ExposedProperties: []

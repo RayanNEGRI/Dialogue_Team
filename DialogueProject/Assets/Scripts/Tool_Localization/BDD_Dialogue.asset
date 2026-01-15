@@ -16,32 +16,32 @@ MonoBehaviour:
   - key: bnjr
     translations:
     - languageCode: en
-      text: 
+      text: hello
     - languageCode: fr-FR
       text: bonjour
     - languageCode: es
-      text: 
+      text: "buen d\xEDa"
   - key: bnvn
     translations:
     - languageCode: en
-      text: 
+      text: welcome
     - languageCode: fr-FR
       text: bienvenu
     - languageCode: es
-      text: 
+      text: bienvenido
   - key: slt
     translations:
     - languageCode: en
-      text: 
+      text: hi
     - languageCode: fr-FR
       text: salut
     - languageCode: es
-      text: 
+      text: hola
   - key: rvr
     translations:
     - languageCode: en
-      text: 
+      text: goodbye
     - languageCode: fr-FR
       text: au revoir
     - languageCode: es
-      text: 
+      text: "adi\xF3s"

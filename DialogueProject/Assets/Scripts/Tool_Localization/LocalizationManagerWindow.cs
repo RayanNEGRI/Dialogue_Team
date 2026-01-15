@@ -8,14 +8,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.IO;
-using System.Globalization; // Important pour gérer les accents
+using System.Globalization;
 
 public class LocalizationManagerWindow : EditorWindow
 {
     // --- DONNÉES ---
     private StringTableCollection selectedCollection;
     private TextAsset csvFile;
-    private BDD_Dialogue targetBDD;
+    private BDD_Dialogue targetBDD; // On utilise la BDD pour stocker les brouillons (plus stable)
 
     // --- UI STATE ---
     private int selectedLanguageIndex = 0;
@@ -274,7 +274,7 @@ public class LocalizationManagerWindow : EditorWindow
         {
             if (refTable.GetEntry(selectedKeyId) == null) refTable.AddEntry(selectedKeyId, newRefText);
             else refTable.GetEntry(selectedKeyId).Value = newRefText;
-            EditorUtility.SetDirty(refTable); // IMPORTANT
+            EditorUtility.SetDirty(refTable); // Sauvegarde automatique
         }
 
         GUILayout.Space(20);
@@ -302,13 +302,33 @@ public class LocalizationManagerWindow : EditorWindow
                 }
                 else
                 {
+                    // Récupération depuis le ScriptableObject (Brouillon)
                     tempEditingText = GetDraftFromBDD(sharedEntry.Key, targetLocale.Identifier.Code);
                 }
                 lastEditedKeyId = selectedKeyId;
             }
 
             string newText = EditorGUILayout.TextArea(tempEditingText, GUILayout.Height(100));
-            tempEditingText = newText;
+
+            // Logique : Si texte change, on sauvegarde en brouillon (SO) OU en table selon l'état
+            if (newText != tempEditingText)
+            {
+                tempEditingText = newText;
+                if (toggle && targetTable != null)
+                {
+                    // Si actif, update table direct
+                    if (existsInTable)
+                    {
+                        targetTable.GetEntry(selectedKeyId).Value = newText;
+                        EditorUtility.SetDirty(targetTable);
+                    }
+                }
+                else
+                {
+                    // Si inactif, update SO
+                    SaveDraftToBDD(sharedEntry.Key, targetLocale.Identifier.Code, newText);
+                }
+            }
 
             if (toggle != existsInTable)
             {
@@ -316,26 +336,16 @@ public class LocalizationManagerWindow : EditorWindow
                 {
                     Undo.RecordObject(targetTable, "Activate Translation");
                     targetTable.AddEntry(selectedKeyId, tempEditingText);
+                    EditorUtility.SetDirty(targetTable);
                 }
                 else
                 {
                     Undo.RecordObject(targetTable, "Deactivate Translation");
+                    // On supprime de la table pour que Unity utilise le Fallback
                     targetTable.RemoveEntry(selectedKeyId);
+                    EditorUtility.SetDirty(targetTable);
 
-                    SaveDraftToBDD(sharedEntry.Key, targetLocale.Identifier.Code, tempEditingText);
-                }
-                EditorUtility.SetDirty(targetTable); // IMPORTANT
-            }
-
-            if (GUI.changed)
-            {
-                if (toggle)
-                {
-                    targetTable.AddEntry(selectedKeyId, tempEditingText);
-                    EditorUtility.SetDirty(targetTable); // IMPORTANT
-                }
-                else
-                {
+                    // On sauvegarde dans la BDD pour ne pas perdre le texte
                     SaveDraftToBDD(sharedEntry.Key, targetLocale.Identifier.Code, tempEditingText);
                 }
             }
@@ -348,7 +358,7 @@ public class LocalizationManagerWindow : EditorWindow
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox($"Traduction en brouillon (Non activée). Le jeu affichera le Français.", MessageType.Info);
+                    EditorGUILayout.HelpBox($"Traduction en brouillon (Sauvegardée dans SO). Le jeu affichera le Français.", MessageType.Info);
                 }
             }
         }
@@ -377,9 +387,11 @@ public class LocalizationManagerWindow : EditorWindow
         var entry = targetBDD.Entries.FirstOrDefault(x => x.key == key);
         if (entry == null)
         {
-            entry = new BDD_Dialogue.DialogueEntry { key = key };
+            entry = new BDD_Dialogue.DialogueEntry { key = key, translations = new List<BDD_Dialogue.TranslationData>() };
             targetBDD.Entries.Add(entry);
         }
+
+        if (entry.translations == null) entry.translations = new List<BDD_Dialogue.TranslationData>();
 
         var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
         if (trad == null)
@@ -409,7 +421,7 @@ public class LocalizationManagerWindow : EditorWindow
         string newKey = "New_Key_" + UnityEngine.Random.Range(100, 999);
         selectedCollection.SharedData.AddKey(newKey);
 
-        // CORRECTION SAUVEGARDE
+        // FIX SAUVEGARDE
         EditorUtility.SetDirty(selectedCollection.SharedData);
 
         var entry = selectedCollection.SharedData.GetEntry(newKey);
@@ -452,21 +464,18 @@ public class LocalizationManagerWindow : EditorWindow
     {
         if (EditorUtility.DisplayDialog("Attention", "Supprimer cette clé de TOUTES les langues ?", "Oui", "Non"))
         {
-            // 1. Supprimer de la SharedData (la liste des clés)
             selectedCollection.SharedData.RemoveKey(id);
-            EditorUtility.SetDirty(selectedCollection.SharedData); // <-- CRITICAL FIX
+            EditorUtility.SetDirty(selectedCollection.SharedData); // FIX
 
-            // 2. Supprimer de toutes les tables (les valeurs)
             foreach (var locale in LocalizationEditorSettings.GetLocales())
             {
                 var t = selectedCollection.GetTable(locale.Identifier) as StringTable;
                 if (t != null)
                 {
                     t.RemoveEntry(id);
-                    EditorUtility.SetDirty(t); // <-- CRITICAL FIX
+                    EditorUtility.SetDirty(t); // FIX
                 }
             }
-            // 3. Ecrire sur le disque
             AssetDatabase.SaveAssets();
         }
     }
@@ -494,6 +503,16 @@ public class LocalizationManagerWindow : EditorWindow
                 {
                     var entry = table.GetEntry(sharedEntry.Id);
                     if (entry != null) val = entry.Value;
+                }
+
+                // Si la table est vide (car décoché), on essaie de récupérer le brouillon du SO
+                // pour ne pas l'écraser lors d'une sauvegarde globale
+                if (string.IsNullOrEmpty(val))
+                {
+                    // Code simplifié pour éviter boucle infinie, on suppose que le SO est à jour via l'éditeur
+                    // Mais idéalement on récupère le draft existant
+                    string draft = GetDraftFromBDD(sharedEntry.Key, locale.Identifier.Code);
+                    if (!string.IsNullOrEmpty(draft)) val = draft;
                 }
 
                 newSOEntry.translations.Add(new BDD_Dialogue.TranslationData()
@@ -550,7 +569,7 @@ public class LocalizationManagerWindow : EditorWindow
 
     private string RemoveAccents(string text) => new string(text.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray());
 
-    // --- SYNC CSV (ROBUSTE + SAUVEGARDE) ---
+    // --- SYNC CSV ROBUSTE ---
 
     private void SyncCSVDirectly()
     {
@@ -593,8 +612,6 @@ public class LocalizationManagerWindow : EditorWindow
         }
 
         Undo.RecordObject(selectedCollection.SharedData, "Sync CSV Keys");
-
-        // Modification potentielle de SharedData, donc on le marque Dirty à la fin
         bool sharedDataChanged = false;
 
         foreach (var line in lines.Skip(1))
@@ -632,7 +649,7 @@ public class LocalizationManagerWindow : EditorWindow
                 if (selectedCollection.SharedData.GetEntry(keyToUse) == null)
                 {
                     selectedCollection.SharedData.AddKey(keyToUse);
-                    sharedDataChanged = true; // On a ajouté une clé
+                    sharedDataChanged = true;
                 }
             }
 
@@ -654,12 +671,12 @@ public class LocalizationManagerWindow : EditorWindow
                         if (e == null)
                         {
                             table.AddEntry(sharedEntry.Id, textValue);
-                            EditorUtility.SetDirty(table); // <-- FIX
+                            EditorUtility.SetDirty(table); // FIX
                         }
                         else if (e.Value != textValue)
                         {
                             e.Value = textValue;
-                            EditorUtility.SetDirty(table); // <-- FIX
+                            EditorUtility.SetDirty(table); // FIX
                         }
                     }
                 }
@@ -668,10 +685,10 @@ public class LocalizationManagerWindow : EditorWindow
 
         if (sharedDataChanged)
         {
-            EditorUtility.SetDirty(selectedCollection.SharedData); // <-- FIX
+            EditorUtility.SetDirty(selectedCollection.SharedData); // FIX
         }
 
-        AssetDatabase.SaveAssets(); // On écrit tout sur le disque
+        AssetDatabase.SaveAssets();
         Debug.Log("Sync CSV Terminée avec succès !");
     }
 

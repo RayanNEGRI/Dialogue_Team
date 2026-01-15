@@ -34,8 +34,20 @@ MonoBehaviour:
     m_Localized: hi
     m_Metadata:
       m_Items: []
-  - m_Id: 607856060682241
-    m_Localized: 
+  - m_Id: 621770227994624
+    m_Localized: hello
+    m_Metadata:
+      m_Items: []
+  - m_Id: 621770265743360
+    m_Localized: welcome
+    m_Metadata:
+      m_Items: []
+  - m_Id: 621770265743362
+    m_Localized: goodbye
+    m_Metadata:
+      m_Items: []
+  - m_Id: 621770265743361
+    m_Localized: hi
     m_Metadata:
       m_Items: []
   references:

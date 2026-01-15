@@ -34,6 +34,22 @@ MonoBehaviour:
     m_Localized: hola
     m_Metadata:
       m_Items: []
+  - m_Id: 621770227994624
+    m_Localized: "buen d\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 621770265743360
+    m_Localized: bienvenido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 621770265743362
+    m_Localized: "adi\xF3s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 621770265743361
+    m_Localized: hola
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
