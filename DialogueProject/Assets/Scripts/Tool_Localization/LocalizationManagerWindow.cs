@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.IO;
+using System.Globalization; // Important pour gérer les accents
 
 public class LocalizationManagerWindow : EditorWindow
 {
@@ -87,7 +88,7 @@ public class LocalizationManagerWindow : EditorWindow
         {
             if (GUILayout.Button("Sauvegarder SO", EditorStyles.miniButton, GUILayout.Height(25))) SaveToScriptableObject();
             if (GUILayout.Button("Export CSV", EditorStyles.miniButton, GUILayout.Height(25))) ExportToCSV();
-            if (GUILayout.Button("Sync CSV", EditorStyles.miniButton, GUILayout.Height(25)))
+            if (GUILayout.Button("Sync CSV (Base FR)", EditorStyles.miniButton, GUILayout.Height(25)))
             {
                 if (csvFile == null) Debug.LogError("Assignez un CSV dans le champ ci-dessous !");
                 else SyncCSVDirectly();
@@ -273,8 +274,7 @@ public class LocalizationManagerWindow : EditorWindow
         {
             if (refTable.GetEntry(selectedKeyId) == null) refTable.AddEntry(selectedKeyId, newRefText);
             else refTable.GetEntry(selectedKeyId).Value = newRefText;
-            GenerateSmartKey(sharedEntry, newRefText);
-            EditorUtility.SetDirty(refTable);
+            EditorUtility.SetDirty(refTable); // IMPORTANT
         }
 
         GUILayout.Space(20);
@@ -324,7 +324,7 @@ public class LocalizationManagerWindow : EditorWindow
 
                     SaveDraftToBDD(sharedEntry.Key, targetLocale.Identifier.Code, tempEditingText);
                 }
-                EditorUtility.SetDirty(targetTable);
+                EditorUtility.SetDirty(targetTable); // IMPORTANT
             }
 
             if (GUI.changed)
@@ -332,7 +332,7 @@ public class LocalizationManagerWindow : EditorWindow
                 if (toggle)
                 {
                     targetTable.AddEntry(selectedKeyId, tempEditingText);
-                    EditorUtility.SetDirty(targetTable);
+                    EditorUtility.SetDirty(targetTable); // IMPORTANT
                 }
                 else
                 {
@@ -408,6 +408,10 @@ public class LocalizationManagerWindow : EditorWindow
     {
         string newKey = "New_Key_" + UnityEngine.Random.Range(100, 999);
         selectedCollection.SharedData.AddKey(newKey);
+
+        // CORRECTION SAUVEGARDE
+        EditorUtility.SetDirty(selectedCollection.SharedData);
+
         var entry = selectedCollection.SharedData.GetEntry(newKey);
         if (entry != null)
         {
@@ -448,12 +452,21 @@ public class LocalizationManagerWindow : EditorWindow
     {
         if (EditorUtility.DisplayDialog("Attention", "Supprimer cette clé de TOUTES les langues ?", "Oui", "Non"))
         {
+            // 1. Supprimer de la SharedData (la liste des clés)
             selectedCollection.SharedData.RemoveKey(id);
+            EditorUtility.SetDirty(selectedCollection.SharedData); // <-- CRITICAL FIX
+
+            // 2. Supprimer de toutes les tables (les valeurs)
             foreach (var locale in LocalizationEditorSettings.GetLocales())
             {
                 var t = selectedCollection.GetTable(locale.Identifier) as StringTable;
-                if (t != null) t.RemoveEntry(id);
+                if (t != null)
+                {
+                    t.RemoveEntry(id);
+                    EditorUtility.SetDirty(t); // <-- CRITICAL FIX
+                }
             }
+            // 3. Ecrire sur le disque
             AssetDatabase.SaveAssets();
         }
     }
@@ -496,6 +509,8 @@ public class LocalizationManagerWindow : EditorWindow
         Debug.Log("Sauvegarde dans BDD_Dialogue réussie !");
     }
 
+    // --- KEY GENERATION LOGIC ---
+
     private void GenerateSmartKey(SharedTableData.SharedTableEntry sharedEntry, string content)
     {
         string finalKey = CalculateSmartKeyString(content);
@@ -512,73 +527,173 @@ public class LocalizationManagerWindow : EditorWindow
 
     private string CalculateSmartKeyString(string content)
     {
-        string cleaned = RemoveAccents(content).ToLower();
-        string consonnes = Regex.Replace(cleaned, "[aeiouyhàâéèêëîïôûùç ]", "");
-        if (consonnes.Length > 10) consonnes = consonnes.Substring(0, 10);
-        if (string.IsNullOrEmpty(consonnes)) consonnes = "dlg";
+        if (string.IsNullOrEmpty(content)) return "new_key_" + Random.Range(0, 1000);
 
-        int index = 1;
-        string finalKey = $"{consonnes}_{index}";
-        while (selectedCollection.SharedData.GetEntry(finalKey) != null) { index++; finalKey = $"{consonnes}_{index}"; }
+        string cleaned = RemoveAccents(content).ToLower();
+        string consonnes = Regex.Replace(cleaned, "[^a-z]|[aeiouy]", "");
+
+        if (consonnes.Length > 10) consonnes = consonnes.Substring(0, 10);
+        if (string.IsNullOrEmpty(consonnes)) consonnes = "txt";
+
+        string baseKey = consonnes;
+        string finalKey = baseKey;
+        int index = 2;
+
+        while (selectedCollection.SharedData.GetEntry(finalKey) != null)
+        {
+            finalKey = $"{baseKey}_{index}";
+            index++;
+        }
+
         return finalKey;
     }
 
-    private string RemoveAccents(string text) => new string(text.Normalize(NormalizationForm.FormD).Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark).ToArray());
+    private string RemoveAccents(string text) => new string(text.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray());
+
+    // --- SYNC CSV (ROBUSTE + SAUVEGARDE) ---
 
     private void SyncCSVDirectly()
     {
         if (csvFile == null) return;
+
         string[] lines = csvFile.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length < 2) return;
+
         string[] headers = lines[0].Split(',');
         Dictionary<int, Locale> columnMap = new Dictionary<int, Locale>();
         var allLocales = LocalizationEditorSettings.GetLocales();
+
+        int frColIndex = -1;
+
         for (int i = 0; i < headers.Length; i++)
         {
-            string h = headers[i].Trim().ToUpper();
-            if (h == "ID" || h == "KEY") continue;
-            var locale = allLocales.FirstOrDefault(l => l.Identifier.Code.ToUpper() == h || l.name.ToUpper() == h);
-            if (locale != null) columnMap.Add(i, locale);
+            string h = headers[i].Trim().Replace("\"", "").Trim();
+            if (string.IsNullOrEmpty(h) || h.ToUpper() == "ID" || h.ToUpper() == "KEY") continue;
+
+            var locale = allLocales.FirstOrDefault(l =>
+                l.Identifier.Code.Equals(h, System.StringComparison.OrdinalIgnoreCase) ||
+                l.name.Equals(h, System.StringComparison.OrdinalIgnoreCase) ||
+                (h.ToLower() == "fr" && l.Identifier.Code.ToLower().StartsWith("fr"))
+            );
+
+            if (locale != null)
+            {
+                columnMap.Add(i, locale);
+                if (locale.Identifier.Code.ToLower().StartsWith("fr") || h.ToLower() == "fr")
+                {
+                    frColIndex = i;
+                }
+            }
         }
+
+        if (frColIndex == -1)
+        {
+            Debug.LogError("Erreur : Impossible de trouver une colonne 'fr' !");
+            return;
+        }
+
         Undo.RecordObject(selectedCollection.SharedData, "Sync CSV Keys");
+
+        // Modification potentielle de SharedData, donc on le marque Dirty à la fin
+        bool sharedDataChanged = false;
+
         foreach (var line in lines.Skip(1))
         {
             string[] cells = line.Split(',');
-            if (cells.Length < 2) continue;
-            string key = cells[1].Trim();
-            if (string.IsNullOrEmpty(key)) continue;
-            if (selectedCollection.SharedData.GetEntry(key) == null) selectedCollection.SharedData.AddKey(key);
-            var sharedEntry = selectedCollection.SharedData.GetEntry(key);
+            if (frColIndex >= cells.Length) continue;
+            string frText = cells[frColIndex].Trim().Replace(";", ",");
+
+            if (string.IsNullOrEmpty(frText)) continue;
+
+            string keyToUse = "";
+            string idealKey = CalculateSmartKeyString(frText);
+            string baseKeyCandidates = Regex.Replace(idealKey, @"_\d+$", "");
+
+            var frTable = selectedCollection.GetTable(columnMap[frColIndex].Identifier) as StringTable;
+            bool foundExistingKey = false;
+
+            foreach (var entry in selectedCollection.SharedData.Entries)
+            {
+                if (entry.Key.StartsWith(baseKeyCandidates))
+                {
+                    var existingFrEntry = frTable.GetEntry(entry.Id);
+                    if (existingFrEntry != null && existingFrEntry.Value == frText)
+                    {
+                        keyToUse = entry.Key;
+                        foundExistingKey = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundExistingKey)
+            {
+                keyToUse = idealKey;
+                if (selectedCollection.SharedData.GetEntry(keyToUse) == null)
+                {
+                    selectedCollection.SharedData.AddKey(keyToUse);
+                    sharedDataChanged = true; // On a ajouté une clé
+                }
+            }
+
+            var sharedEntry = selectedCollection.SharedData.GetEntry(keyToUse);
+            if (sharedEntry == null) continue;
+
             foreach (var col in columnMap)
             {
                 if (col.Key >= cells.Length) continue;
+
                 var table = selectedCollection.GetTable(col.Value.Identifier) as StringTable;
                 if (table != null)
                 {
                     string textValue = cells[col.Key].Trim().Replace(";", ",");
-                    if (!string.IsNullOrEmpty(textValue)) { table.AddEntry(sharedEntry.Id, textValue); EditorUtility.SetDirty(table); }
+
+                    if (!string.IsNullOrEmpty(textValue))
+                    {
+                        var e = table.GetEntry(sharedEntry.Id);
+                        if (e == null)
+                        {
+                            table.AddEntry(sharedEntry.Id, textValue);
+                            EditorUtility.SetDirty(table); // <-- FIX
+                        }
+                        else if (e.Value != textValue)
+                        {
+                            e.Value = textValue;
+                            EditorUtility.SetDirty(table); // <-- FIX
+                        }
+                    }
                 }
             }
         }
-        AssetDatabase.SaveAssets();
-        Debug.Log("Sync CSV Terminée");
+
+        if (sharedDataChanged)
+        {
+            EditorUtility.SetDirty(selectedCollection.SharedData); // <-- FIX
+        }
+
+        AssetDatabase.SaveAssets(); // On écrit tout sur le disque
+        Debug.Log("Sync CSV Terminée avec succès !");
     }
 
     private void ExportToCSV()
     {
         var allLocales = LocalizationEditorSettings.GetLocales();
         if (allLocales == null || allLocales.Count == 0) return;
+
         string path = EditorUtility.SaveFilePanel("Exporter la table en CSV", "", "BDD_Dialogue_Export.csv", "csv");
         if (string.IsNullOrEmpty(path)) return;
+
         StringBuilder sb = new StringBuilder();
         List<string> header = new List<string> { "ID", "Key" };
         foreach (var locale in allLocales) header.Add(locale.Identifier.Code.ToUpper());
         sb.AppendLine(string.Join(",", header));
+
         foreach (var sharedEntry in selectedCollection.SharedData.Entries)
         {
             List<string> row = new List<string>();
             row.Add(sharedEntry.Id.ToString());
             row.Add(sharedEntry.Key);
+
             foreach (var locale in allLocales)
             {
                 var table = selectedCollection.GetTable(locale.Identifier) as StringTable;

@@ -15,20 +15,20 @@ MonoBehaviour:
   m_TableCollectionName: Dialogues
   m_TableCollectionNameGuidString: e6e2bf121cc2deb4099984f23f50c0b7
   m_Entries:
-  - m_Id: 597209386209280
-    m_Key: dlg_2
+  - m_Id: 607856027127808
+    m_Key: bnjr
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209281
-    m_Key: zzz_2
+  - m_Id: 607856060682240
+    m_Key: bnvn
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209282
-    m_Key: zzz_1
+  - m_Id: 607856060682241
+    m_Key: slt
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209283
-    m_Key: bbbb_1
+  - m_Id: 607856060682242
+    m_Key: rvr
     m_Metadata:
       m_Items: []
   m_Metadata:

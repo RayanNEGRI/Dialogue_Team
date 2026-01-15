@@ -210,20 +210,20 @@ MonoBehaviour:
     m_Localized: bonjour
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209282
-    m_Localized: zzz
+  - m_Id: 607856027127808
+    m_Localized: bonjour
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209281
-    m_Localized: zzz
+  - m_Id: 607856060682240
+    m_Localized: bienvenu
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209280
-    m_Localized: aaaa
+  - m_Id: 607856060682241
+    m_Localized: salut
     m_Metadata:
       m_Items: []
-  - m_Id: 597209386209283
-    m_Localized: bbbb
+  - m_Id: 607856060682242
+    m_Localized: au revoir
     m_Metadata:
       m_Items: []
   references:
