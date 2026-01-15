@@ -12,10 +12,23 @@ using System.Globalization;
 
 public class LocalizationManagerWindow : EditorWindow
 {
-    // --- DONNÉES ---
+    // --- ENUM MODES ---
+    private enum LocMode
+    {
+        Dialogues,
+        InterfaceUI
+    }
+
+    // --- DONNÉES PERSISTANTES ---
+    [SerializeField] private StringTableCollection dialogueCollection;
+    [SerializeField] private BDD_Dialogue dialogueBDD;
+
+    [SerializeField] private StringTableCollection uiCollection;
+    [SerializeField] private BDD_UI uiBDD; // Utilise maintenant la classe spécifique BDD_UI
+
+    // --- VARIABLES DE TRAVAIL ---
+    private LocMode currentMode = LocMode.Dialogues;
     private StringTableCollection selectedCollection;
-    private TextAsset csvFile;
-    private BDD_Dialogue targetBDD; // On utilise la BDD pour stocker les brouillons (plus stable)
 
     // --- UI STATE ---
     private int selectedLanguageIndex = 0;
@@ -32,6 +45,7 @@ public class LocalizationManagerWindow : EditorWindow
     // --- CACHE TEMPORAIRE ---
     private string tempEditingText = "";
     private long lastEditedKeyId = -1;
+    private TextAsset csvFile;
 
     [MenuItem("Tools/Localisation Tool")]
     public static void ShowWindow() => GetWindow<LocalizationManagerWindow>("Loc Manager");
@@ -49,9 +63,35 @@ public class LocalizationManagerWindow : EditorWindow
 
     private void OnGUI()
     {
+        // 0. BARRE D'ONGLETS (TABS)
+        GUILayout.Space(10);
+        GUIStyle tabStyle = new GUIStyle(EditorStyles.toolbarButton);
+        tabStyle.fontStyle = FontStyle.Bold;
+        tabStyle.fixedHeight = 30;
+
+        LocMode oldMode = currentMode;
+        currentMode = (LocMode)GUILayout.Toolbar((int)currentMode, new string[] { "🗣️ DIALOGUES", "🖥️ INTERFACE (UI)" }, tabStyle);
+
+        if (oldMode != currentMode)
+        {
+            selectedKeyId = -1;
+            lastEditedKeyId = -1;
+            tempEditingText = "";
+            searchFilter = "";
+            GUI.FocusControl(null);
+        }
+
+        // ASSIGNATION COLLECTION
+        if (currentMode == LocMode.Dialogues) selectedCollection = dialogueCollection;
+        else selectedCollection = uiCollection;
+
         DrawHeader();
 
-        if (selectedCollection == null) return;
+        if (selectedCollection == null)
+        {
+            EditorGUILayout.HelpBox($"Veuillez assigner une Table Collection pour le mode {currentMode}.", MessageType.Info);
+            return;
+        }
 
         DrawSeparator();
 
@@ -72,13 +112,38 @@ public class LocalizationManagerWindow : EditorWindow
         GUILayout.BeginVertical("box");
 
         // 1. CONFIGURATION
-        GUILayout.Label("1. CONFIGURATION", EditorStyles.boldLabel);
+        GUILayout.Label($"1. CONFIGURATION ({currentMode.ToString().ToUpper()})", EditorStyles.boldLabel);
+
+        EditorGUI.BeginChangeCheck();
+
         GUILayout.BeginHorizontal();
-        selectedCollection = (StringTableCollection)EditorGUILayout.ObjectField("Table Cible", selectedCollection, typeof(StringTableCollection), false);
+        if (currentMode == LocMode.Dialogues)
+        {
+            dialogueCollection = (StringTableCollection)EditorGUILayout.ObjectField("Table Dialogues", dialogueCollection, typeof(StringTableCollection), false);
+        }
+        else
+        {
+            uiCollection = (StringTableCollection)EditorGUILayout.ObjectField("Table Interface UI", uiCollection, typeof(StringTableCollection), false);
+        }
+
         if (GUILayout.Button("Ouvrir", GUILayout.Width(60)) && selectedCollection != null) AssetDatabase.OpenAsset(selectedCollection);
         GUILayout.EndHorizontal();
 
-        targetBDD = (BDD_Dialogue)EditorGUILayout.ObjectField("BDD Dialogue (SO)", targetBDD, typeof(BDD_Dialogue), false);
+        // BDD Field
+        if (currentMode == LocMode.Dialogues)
+        {
+            dialogueBDD = (BDD_Dialogue)EditorGUILayout.ObjectField("BDD Save (Dialogues)", dialogueBDD, typeof(BDD_Dialogue), false);
+        }
+        else
+        {
+            uiBDD = (BDD_UI)EditorGUILayout.ObjectField("BDD Save (UI)", uiBDD, typeof(BDD_UI), false);
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            if (currentMode == LocMode.Dialogues) selectedCollection = dialogueCollection;
+            else selectedCollection = uiCollection;
+        }
 
         GUILayout.Space(10);
 
@@ -172,7 +237,7 @@ public class LocalizationManagerWindow : EditorWindow
     {
         GUILayout.BeginVertical("helpBox", GUILayout.Width(250), GUILayout.ExpandHeight(true));
 
-        GUILayout.Label("LISTE DES CLÉS", EditorStyles.miniBoldLabel);
+        GUILayout.Label($"LISTE CLÉS ({currentMode})", EditorStyles.miniBoldLabel);
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("🔍", GUILayout.Width(20));
@@ -274,7 +339,7 @@ public class LocalizationManagerWindow : EditorWindow
         {
             if (refTable.GetEntry(selectedKeyId) == null) refTable.AddEntry(selectedKeyId, newRefText);
             else refTable.GetEntry(selectedKeyId).Value = newRefText;
-            EditorUtility.SetDirty(refTable); // Sauvegarde automatique
+            EditorUtility.SetDirty(refTable);
         }
 
         GUILayout.Space(20);
@@ -310,13 +375,11 @@ public class LocalizationManagerWindow : EditorWindow
 
             string newText = EditorGUILayout.TextArea(tempEditingText, GUILayout.Height(100));
 
-            // Logique : Si texte change, on sauvegarde en brouillon (SO) OU en table selon l'état
             if (newText != tempEditingText)
             {
                 tempEditingText = newText;
                 if (toggle && targetTable != null)
                 {
-                    // Si actif, update table direct
                     if (existsInTable)
                     {
                         targetTable.GetEntry(selectedKeyId).Value = newText;
@@ -325,7 +388,6 @@ public class LocalizationManagerWindow : EditorWindow
                 }
                 else
                 {
-                    // Si inactif, update SO
                     SaveDraftToBDD(sharedEntry.Key, targetLocale.Identifier.Code, newText);
                 }
             }
@@ -341,11 +403,8 @@ public class LocalizationManagerWindow : EditorWindow
                 else
                 {
                     Undo.RecordObject(targetTable, "Deactivate Translation");
-                    // On supprime de la table pour que Unity utilise le Fallback
                     targetTable.RemoveEntry(selectedKeyId);
                     EditorUtility.SetDirty(targetTable);
-
-                    // On sauvegarde dans la BDD pour ne pas perdre le texte
                     SaveDraftToBDD(sharedEntry.Key, targetLocale.Identifier.Code, tempEditingText);
                 }
             }
@@ -358,7 +417,7 @@ public class LocalizationManagerWindow : EditorWindow
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox($"Traduction en brouillon (Sauvegardée dans SO). Le jeu affichera le Français.", MessageType.Info);
+                    EditorGUILayout.HelpBox($"Traduction en brouillon (Sauvegardée dans SO {currentMode}).", MessageType.Info);
                 }
             }
         }
@@ -382,36 +441,67 @@ public class LocalizationManagerWindow : EditorWindow
 
     private void SaveDraftToBDD(string key, string langCode, string text)
     {
-        if (targetBDD == null) return;
-
-        var entry = targetBDD.Entries.FirstOrDefault(x => x.key == key);
-        if (entry == null)
+        if (currentMode == LocMode.Dialogues)
         {
-            entry = new BDD_Dialogue.DialogueEntry { key = key, translations = new List<BDD_Dialogue.TranslationData>() };
-            targetBDD.Entries.Add(entry);
+            if (dialogueBDD == null) return;
+            var entry = dialogueBDD.Entries.FirstOrDefault(x => x.key == key);
+            if (entry == null)
+            {
+                entry = new BDD_Dialogue.DialogueEntry { key = key, translations = new List<BDD_Dialogue.TranslationData>() };
+                dialogueBDD.Entries.Add(entry);
+            }
+            if (entry.translations == null) entry.translations = new List<BDD_Dialogue.TranslationData>();
+            var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
+            if (trad == null)
+            {
+                trad = new BDD_Dialogue.TranslationData { languageCode = langCode };
+                entry.translations.Add(trad);
+            }
+            trad.text = text;
+            EditorUtility.SetDirty(dialogueBDD);
         }
-
-        if (entry.translations == null) entry.translations = new List<BDD_Dialogue.TranslationData>();
-
-        var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
-        if (trad == null)
+        else // UI MODE
         {
-            trad = new BDD_Dialogue.TranslationData { languageCode = langCode };
-            entry.translations.Add(trad);
+            if (uiBDD == null) return;
+            var entry = uiBDD.Entries.FirstOrDefault(x => x.key == key);
+            if (entry == null)
+            {
+                entry = new BDD_UI.UIEntry { key = key, translations = new List<BDD_UI.TranslationData>() };
+                uiBDD.Entries.Add(entry);
+            }
+            if (entry.translations == null) entry.translations = new List<BDD_UI.TranslationData>();
+            var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
+            if (trad == null)
+            {
+                trad = new BDD_UI.TranslationData { languageCode = langCode };
+                entry.translations.Add(trad);
+            }
+            trad.text = text;
+            EditorUtility.SetDirty(uiBDD);
         }
-
-        trad.text = text;
-        EditorUtility.SetDirty(targetBDD);
     }
 
     private string GetDraftFromBDD(string key, string langCode)
     {
-        if (targetBDD == null || targetBDD.Entries == null) return "";
-        var entry = targetBDD.Entries.FirstOrDefault(x => x.key == key);
-        if (entry != null && entry.translations != null)
+        if (currentMode == LocMode.Dialogues)
         {
-            var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
-            if (trad != null) return trad.text;
+            if (dialogueBDD == null || dialogueBDD.Entries == null) return "";
+            var entry = dialogueBDD.Entries.FirstOrDefault(x => x.key == key);
+            if (entry != null && entry.translations != null)
+            {
+                var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
+                if (trad != null) return trad.text;
+            }
+        }
+        else // UI MODE
+        {
+            if (uiBDD == null || uiBDD.Entries == null) return "";
+            var entry = uiBDD.Entries.FirstOrDefault(x => x.key == key);
+            if (entry != null && entry.translations != null)
+            {
+                var trad = entry.translations.FirstOrDefault(x => x.languageCode == langCode);
+                if (trad != null) return trad.text;
+            }
         }
         return "";
     }
@@ -420,8 +510,6 @@ public class LocalizationManagerWindow : EditorWindow
     {
         string newKey = "New_Key_" + UnityEngine.Random.Range(100, 999);
         selectedCollection.SharedData.AddKey(newKey);
-
-        // FIX SAUVEGARDE
         EditorUtility.SetDirty(selectedCollection.SharedData);
 
         var entry = selectedCollection.SharedData.GetEntry(newKey);
@@ -465,7 +553,7 @@ public class LocalizationManagerWindow : EditorWindow
         if (EditorUtility.DisplayDialog("Attention", "Supprimer cette clé de TOUTES les langues ?", "Oui", "Non"))
         {
             selectedCollection.SharedData.RemoveKey(id);
-            EditorUtility.SetDirty(selectedCollection.SharedData); // FIX
+            EditorUtility.SetDirty(selectedCollection.SharedData);
 
             foreach (var locale in LocalizationEditorSettings.GetLocales())
             {
@@ -473,7 +561,7 @@ public class LocalizationManagerWindow : EditorWindow
                 if (t != null)
                 {
                     t.RemoveEntry(id);
-                    EditorUtility.SetDirty(t); // FIX
+                    EditorUtility.SetDirty(t);
                 }
             }
             AssetDatabase.SaveAssets();
@@ -483,66 +571,78 @@ public class LocalizationManagerWindow : EditorWindow
     private void SaveToScriptableObject()
     {
         var allLocales = LocalizationEditorSettings.GetLocales();
-        if (targetBDD == null || allLocales.Count == 0) return;
+        if (allLocales.Count == 0) return;
 
-        Undo.RecordObject(targetBDD, "Save Loca");
-        targetBDD.Entries.Clear();
-
-        foreach (var sharedEntry in selectedCollection.SharedData.Entries)
+        // MODE DIALOGUES
+        if (currentMode == LocMode.Dialogues)
         {
-            BDD_Dialogue.DialogueEntry newSOEntry = new BDD_Dialogue.DialogueEntry();
-            newSOEntry.key = sharedEntry.Key;
-            newSOEntry.translations = new List<BDD_Dialogue.TranslationData>();
+            if (dialogueBDD == null) return;
+            Undo.RecordObject(dialogueBDD, "Save Loca Dialogues");
+            dialogueBDD.Entries.Clear();
 
-            foreach (var locale in allLocales)
+            foreach (var sharedEntry in selectedCollection.SharedData.Entries)
             {
-                var table = selectedCollection.GetTable(locale.Identifier) as StringTable;
-                string val = "";
+                BDD_Dialogue.DialogueEntry newSOEntry = new BDD_Dialogue.DialogueEntry();
+                newSOEntry.key = sharedEntry.Key;
+                newSOEntry.translations = new List<BDD_Dialogue.TranslationData>();
 
-                if (table != null)
+                foreach (var locale in allLocales)
                 {
-                    var entry = table.GetEntry(sharedEntry.Id);
-                    if (entry != null) val = entry.Value;
+                    string val = GetTextForSave(sharedEntry, locale);
+                    newSOEntry.translations.Add(new BDD_Dialogue.TranslationData() { languageCode = locale.Identifier.Code, text = val });
                 }
-
-                // Si la table est vide (car décoché), on essaie de récupérer le brouillon du SO
-                // pour ne pas l'écraser lors d'une sauvegarde globale
-                if (string.IsNullOrEmpty(val))
-                {
-                    // Code simplifié pour éviter boucle infinie, on suppose que le SO est à jour via l'éditeur
-                    // Mais idéalement on récupère le draft existant
-                    string draft = GetDraftFromBDD(sharedEntry.Key, locale.Identifier.Code);
-                    if (!string.IsNullOrEmpty(draft)) val = draft;
-                }
-
-                newSOEntry.translations.Add(new BDD_Dialogue.TranslationData()
-                {
-                    languageCode = locale.Identifier.Code,
-                    text = val
-                });
+                dialogueBDD.Entries.Add(newSOEntry);
             }
-            targetBDD.Entries.Add(newSOEntry);
+            EditorUtility.SetDirty(dialogueBDD);
+            Debug.Log($"Sauvegarde dans {dialogueBDD.name} réussie !");
         }
-        EditorUtility.SetDirty(targetBDD);
+        // MODE UI
+        else
+        {
+            if (uiBDD == null) return;
+            Undo.RecordObject(uiBDD, "Save Loca UI");
+            uiBDD.Entries.Clear();
+
+            foreach (var sharedEntry in selectedCollection.SharedData.Entries)
+            {
+                BDD_UI.UIEntry newSOEntry = new BDD_UI.UIEntry();
+                newSOEntry.key = sharedEntry.Key;
+                newSOEntry.translations = new List<BDD_UI.TranslationData>();
+
+                foreach (var locale in allLocales)
+                {
+                    string val = GetTextForSave(sharedEntry, locale);
+                    newSOEntry.translations.Add(new BDD_UI.TranslationData() { languageCode = locale.Identifier.Code, text = val });
+                }
+                uiBDD.Entries.Add(newSOEntry);
+            }
+            EditorUtility.SetDirty(uiBDD);
+            Debug.Log($"Sauvegarde dans {uiBDD.name} réussie !");
+        }
+
         AssetDatabase.SaveAssets();
-        Debug.Log("Sauvegarde dans BDD_Dialogue réussie !");
+    }
+
+    private string GetTextForSave(SharedTableData.SharedTableEntry sharedEntry, Locale locale)
+    {
+        var table = selectedCollection.GetTable(locale.Identifier) as StringTable;
+        string val = "";
+
+        if (table != null)
+        {
+            var entry = table.GetEntry(sharedEntry.Id);
+            if (entry != null) val = entry.Value;
+        }
+
+        if (string.IsNullOrEmpty(val))
+        {
+            string draft = GetDraftFromBDD(sharedEntry.Key, locale.Identifier.Code);
+            if (!string.IsNullOrEmpty(draft)) val = draft;
+        }
+        return val;
     }
 
     // --- KEY GENERATION LOGIC ---
-
-    private void GenerateSmartKey(SharedTableData.SharedTableEntry sharedEntry, string content)
-    {
-        string finalKey = CalculateSmartKeyString(content);
-        if (sharedEntry.Key != finalKey)
-        {
-            var existing = selectedCollection.SharedData.GetEntry(finalKey);
-            if (existing != null && existing.Id != sharedEntry.Id) return;
-
-            Undo.RecordObject(selectedCollection.SharedData, "Auto Rename Key");
-            selectedCollection.SharedData.RenameKey(sharedEntry.Key, finalKey);
-            EditorUtility.SetDirty(selectedCollection.SharedData);
-        }
-    }
 
     private string CalculateSmartKeyString(string content)
     {
@@ -671,12 +771,12 @@ public class LocalizationManagerWindow : EditorWindow
                         if (e == null)
                         {
                             table.AddEntry(sharedEntry.Id, textValue);
-                            EditorUtility.SetDirty(table); // FIX
+                            EditorUtility.SetDirty(table);
                         }
                         else if (e.Value != textValue)
                         {
                             e.Value = textValue;
-                            EditorUtility.SetDirty(table); // FIX
+                            EditorUtility.SetDirty(table);
                         }
                     }
                 }
@@ -685,7 +785,7 @@ public class LocalizationManagerWindow : EditorWindow
 
         if (sharedDataChanged)
         {
-            EditorUtility.SetDirty(selectedCollection.SharedData); // FIX
+            EditorUtility.SetDirty(selectedCollection.SharedData);
         }
 
         AssetDatabase.SaveAssets();
@@ -697,7 +797,7 @@ public class LocalizationManagerWindow : EditorWindow
         var allLocales = LocalizationEditorSettings.GetLocales();
         if (allLocales == null || allLocales.Count == 0) return;
 
-        string path = EditorUtility.SaveFilePanel("Exporter la table en CSV", "", "BDD_Dialogue_Export.csv", "csv");
+        string path = EditorUtility.SaveFilePanel("Exporter la table en CSV", "", "Export.csv", "csv");
         if (string.IsNullOrEmpty(path)) return;
 
         StringBuilder sb = new StringBuilder();

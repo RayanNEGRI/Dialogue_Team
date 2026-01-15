@@ -26,6 +26,14 @@ MonoBehaviour:
     m_Localized: Choice 1
     m_Metadata:
       m_Items: []
+  - m_Id: 104007134474240
+    m_Localized: Choice 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 104007176417280
+    m_Localized: Choice 2
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

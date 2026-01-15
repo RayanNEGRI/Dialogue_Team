@@ -15,12 +15,12 @@ MonoBehaviour:
   m_TableCollectionName: UI Tables
   m_TableCollectionNameGuidString: f2bbdbf01776620439b070408fa6d0fa
   m_Entries:
-  - m_Id: 1082194546688
-    m_Key: c1
+  - m_Id: 104007134474240
+    m_Key: chx
     m_Metadata:
       m_Items: []
-  - m_Id: 1082236489728
-    m_Key: c2
+  - m_Id: 104007176417280
+    m_Key: chx_2
     m_Metadata:
       m_Items: []
   m_Metadata:
