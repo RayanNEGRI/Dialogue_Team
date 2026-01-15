@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements; // Nécessaire pour PopupField
 using UnityEngine;
 using UnityEngine.UIElements;
 using Subtegral.DialogueSystem.DataContainers;
@@ -153,13 +154,59 @@ namespace Subtegral.DialogueSystem.Editor
             return node;
         }
 
+        // --- ICI LA MODIFICATION PRINCIPALE (Fusion BDD + Code A) ---
         private void BuildDialogueNodeUI(DialogueNode node)
         {
-            var dialogueField = new TextField("Dialogue Text") { multiline = true };
-            dialogueField.SetValueWithoutNotify(node.DialogueText);
-            dialogueField.RegisterValueChangedCallback(e => node.DialogueText = e.newValue);
-            node.mainContainer.Add(dialogueField);
+            // 1. Recherche de la BDD
+            var guids = AssetDatabase.FindAssets("t:BDD_Dialogue");
+            BDD_Dialogue bdd = null;
+            if (guids.Length > 0)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                bdd = AssetDatabase.LoadAssetAtPath<BDD_Dialogue>(path);
+            }
 
+            // 2. Si BDD trouvée et non vide -> Menu Déroulant
+            if (bdd != null && bdd.Entries != null && bdd.Entries.Count > 0)
+            {
+                List<string> displayOptions = bdd.Entries.Select(x => x.key).ToList();
+                string defaultValue = displayOptions[0];
+
+                if (displayOptions.Contains(node.DialogueText))
+                {
+                    defaultValue = node.DialogueText;
+                }
+                else if (!string.IsNullOrEmpty(node.DialogueText))
+                {
+                    displayOptions.Insert(0, node.DialogueText);
+                    defaultValue = node.DialogueText;
+                }
+
+                var popup = new PopupField<string>("Clé Dialogue", displayOptions, defaultValue);
+
+                popup.RegisterValueChangedCallback(evt =>
+                {
+                    node.DialogueText = evt.newValue;
+                    node.title = evt.newValue;
+                });
+
+                // Initialisation des valeurs
+                node.DialogueText = defaultValue;
+                if (string.IsNullOrEmpty(node.title) || node.title == "DIALOGUE")
+                    node.title = defaultValue;
+
+                node.mainContainer.Add(popup);
+            }
+            else
+            {
+                // 3. Fallback : Si pas de BDD, on met le TextField classique
+                var dialogueField = new TextField("Dialogue Text") { multiline = true };
+                dialogueField.SetValueWithoutNotify(node.DialogueText);
+                dialogueField.RegisterValueChangedCallback(e => node.DialogueText = e.newValue);
+                node.mainContainer.Add(dialogueField);
+            }
+
+            // 4. Ajout du bouton "Add Choice" (Code A original)
             var addChoice = new Button(() =>
             {
                 var portId = Guid.NewGuid().ToString();
@@ -170,6 +217,7 @@ namespace Subtegral.DialogueSystem.Editor
 
             node.titleButtonContainer.Add(addChoice);
         }
+        // ------------------------------------------------------------
 
         private void BuildBranchNodeUI(DialogueNode node)
         {
