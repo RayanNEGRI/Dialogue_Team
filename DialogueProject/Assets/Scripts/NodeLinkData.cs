@@ -7,9 +7,7 @@ namespace Subtegral.DialogueSystem.DataContainers
     {
         public string BaseNodeGUID;
         public string TargetNodeGUID;
-
         public string PortName;
-
         public string PortId;
         public string PortLabel;
         public string ConditionExpression;

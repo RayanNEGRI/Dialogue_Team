@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Subtegral.DialogueSystem.DataContainers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Subtegral.DialogueSystem.DataContainers;
 
 namespace Subtegral.DialogueSystem.Editor
 {
@@ -28,7 +28,7 @@ namespace Subtegral.DialogueSystem.Editor
             var asset = ScriptableObject.CreateInstance<DialogueContainer>();
 
             SaveNodes(asset);
-            SaveLinksFromUI(asset);
+            SaveLinks(asset);
             SaveExposedProperties(asset);
             SaveCommentBlocks(asset);
 
@@ -58,12 +58,14 @@ namespace Subtegral.DialogueSystem.Editor
 
             foreach (var node in Nodes)
             {
-                if (node.EntyPoint) continue;
+                if (node == null || node.EntyPoint) continue;
+
+                var nodeType = node.NodeType == DialogueNodeType.End ? DialogueNodeType.Dialogue : node.NodeType;
 
                 asset.DialogueNodeData.Add(new DialogueNodeData
                 {
                     NodeGUID = node.GUID,
-                    NodeType = node.NodeType,
+                    NodeType = nodeType,
                     DebugLabel = node.DebugLabel ?? "",
                     DialogueText = node.DialogueText ?? "",
                     ConditionExpression = node.ConditionExpression ?? "",
@@ -72,12 +74,14 @@ namespace Subtegral.DialogueSystem.Editor
             }
         }
 
-        private void SaveLinksFromUI(DialogueContainer asset)
+        private void SaveLinks(DialogueContainer asset)
         {
             asset.NodeLinks.Clear();
 
             foreach (var node in Nodes)
             {
+                if (node == null) continue;
+
                 if (node.EntyPoint)
                 {
                     var startPort = node.outputContainer.Children().OfType<Port>().FirstOrDefault();
@@ -101,27 +105,28 @@ namespace Subtegral.DialogueSystem.Editor
                     var portId = port.userData as string;
                     if (string.IsNullOrEmpty(portId)) continue;
 
-                    // --- MODIFICATION ICI : Récupération correcte de la valeur ---
-                    string labelValue = "";
-                    string condValue = "";
+                    node.Ports.TryGetValue(portId, out var data);
 
-                    // 1. Chercher si c'est un PopupField (Liste déroulante)
-                    var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
-                    if (popup != null)
+                    var label = data?.Label ?? "";
+                    var cond = data?.Condition ?? "";
+
+                    if (string.IsNullOrWhiteSpace(label))
                     {
-                        labelValue = popup.value;
-                    }
-                    else
-                    {
-                        // 2. Sinon chercher si c'est un TextField (Champ texte classique)
-                        var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
-                        if (tf != null) labelValue = tf.value;
+                        var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
+                        if (popup != null) label = popup.value ?? "";
+
+                        if (string.IsNullOrWhiteSpace(label))
+                        {
+                            var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
+                            if (tf != null) label = tf.value ?? "";
+                        }
                     }
 
-                    // Récupération de la condition
-                    var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
-                    if (condTf != null) condValue = condTf.value;
-                    // -----------------------------------------------------------
+                    if (string.IsNullOrWhiteSpace(cond))
+                    {
+                        var ctf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
+                        if (ctf != null) cond = ctf.value ?? "";
+                    }
 
                     var edge = Edges.FirstOrDefault(e => e.output == port);
 
@@ -129,9 +134,9 @@ namespace Subtegral.DialogueSystem.Editor
                     {
                         BaseNodeGUID = node.GUID,
                         PortId = portId,
-                        PortLabel = labelValue ?? "",
-                        ConditionExpression = condValue ?? "",
-                        PortName = labelValue ?? "",
+                        PortLabel = label ?? "",
+                        ConditionExpression = cond ?? "",
+                        PortName = label ?? "",
                         TargetNodeGUID = edge != null ? ((DialogueNode)edge.input.node).GUID : null
                     });
                 }
@@ -141,7 +146,7 @@ namespace Subtegral.DialogueSystem.Editor
         private void SaveExposedProperties(DialogueContainer asset)
         {
             asset.ExposedProperties.Clear();
-            asset.ExposedProperties.AddRange(_graphView.ExposedProperties);
+            asset.ExposedProperties.AddRange(_graphView.ExposedProperties ?? new List<ExposedProperty>());
         }
 
         private void SaveCommentBlocks(DialogueContainer asset)
@@ -150,10 +155,11 @@ namespace Subtegral.DialogueSystem.Editor
 
             foreach (var block in CommentBlocks)
             {
+                if (block == null) continue;
                 var nodes = block.containedElements.OfType<DialogueNode>().Select(n => n.GUID).ToList();
                 asset.CommentBlockData.Add(new CommentBlockData
                 {
-                    Title = block.title,
+                    Title = block.title ?? "Comment Block",
                     Position = block.GetPosition().position,
                     ChildNodes = nodes
                 });
@@ -178,18 +184,19 @@ namespace Subtegral.DialogueSystem.Editor
 
         private void ClearGraph()
         {
-            var entry = Nodes.First(n => n.EntyPoint);
+            var entry = Nodes.FirstOrDefault(n => n != null && n.EntyPoint);
+            if (entry != null)
+            {
+                var first = _container.NodeLinks.FirstOrDefault(l => l != null && string.Equals(l.PortId, "start", StringComparison.OrdinalIgnoreCase));
+                if (first != null) entry.GUID = first.BaseNodeGUID;
+            }
 
-            var first = _container.NodeLinks.FirstOrDefault();
-            if (first != null) entry.GUID = first.BaseNodeGUID;
+            foreach (var edge in Edges.ToList())
+                _graphView.RemoveElement(edge);
 
             foreach (var node in Nodes.ToList())
             {
-                if (node.EntyPoint) continue;
-
-                foreach (var edge in Edges.Where(e => e.input.node == node || e.output.node == node).ToList())
-                    _graphView.RemoveElement(edge);
-
+                if (node == null || node.EntyPoint) continue;
                 _graphView.RemoveElement(node);
             }
 
@@ -199,9 +206,13 @@ namespace Subtegral.DialogueSystem.Editor
 
         private void GenerateNodes()
         {
-            foreach (var data in _container.DialogueNodeData)
+            foreach (var data in _container.DialogueNodeData ?? new List<DialogueNodeData>())
             {
-                var node = _graphView.CreateNode(data.NodeType.ToString(), data.Position, data.NodeType);
+                if (data == null || string.IsNullOrEmpty(data.NodeGUID)) continue;
+
+                var t = data.NodeType == DialogueNodeType.End ? DialogueNodeType.Dialogue : data.NodeType;
+
+                var node = _graphView.CreateNode(t.ToString(), data.Position, t);
 
                 node.GUID = data.NodeGUID;
                 node.DebugLabel = data.DebugLabel ?? "";
@@ -210,20 +221,20 @@ namespace Subtegral.DialogueSystem.Editor
 
                 _graphView.RefreshNodeFields(node);
 
-                var links = _container.NodeLinks.Where(l => l.BaseNodeGUID == data.NodeGUID).ToList();
+                var links = (_container.NodeLinks ?? new List<NodeLinkData>())
+                    .Where(l => l != null && l.BaseNodeGUID == data.NodeGUID && !string.Equals(l.PortId, "start", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
                 if (node.NodeType == DialogueNodeType.Branch)
                 {
                     foreach (var link in links)
                     {
-                        var portId = link.PortId;
+                        var portId = link.PortId ?? "";
                         if (string.IsNullOrEmpty(portId)) continue;
                         if (!node.Ports.ContainsKey(portId)) continue;
 
-                        node.Ports[portId].Label = link.PortLabel ?? "";
-                        node.Ports[portId].Condition = link.ConditionExpression ?? "";
-
-                        ForcePortUI(node, portId, link.PortLabel ?? "", link.ConditionExpression ?? "");
+                        node.Ports[portId].Label = portId.Equals("true", StringComparison.OrdinalIgnoreCase) ? "True" : "False";
+                        node.Ports[portId].Condition = "";
                     }
 
                     continue;
@@ -241,56 +252,24 @@ namespace Subtegral.DialogueSystem.Editor
                         );
 
                     _graphView.AddChoicePort(node, portId, true);
-                    ForcePortUI(node, portId, link.PortLabel ?? "", link.ConditionExpression ?? "");
                 }
+
+                _graphView.RefreshNodeFields(node);
             }
-        }
-
-        private void ForcePortUI(DialogueNode node, string portId, string label, string cond)
-        {
-            var port = node.outputContainer.Children().OfType<Port>()
-                .FirstOrDefault(p => (p.userData as string) == portId);
-
-            if (port == null) return;
-
-            // --- MODIFICATION ICI : Mise à jour de la UI au chargement ---
-
-            // 1. Mise à jour si c'est un PopupField
-            var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
-            if (popup != null)
-            {
-                popup.value = label;
-            }
-
-            // 2. Mise à jour si c'est un TextField
-            var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
-            if (tf != null)
-            {
-                tf.SetValueWithoutNotify(label);
-            }
-
-            // 3. Mise à jour de la condition
-            var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
-            if (condTf != null)
-            {
-                condTf.SetValueWithoutNotify(cond);
-            }
-            // -------------------------------------------------------------
-
-            port.portName = label;
         }
 
         private void ConnectNodes()
         {
-            foreach (var link in _container.NodeLinks)
+            foreach (var link in _container.NodeLinks ?? new List<NodeLinkData>())
             {
+                if (link == null) continue;
                 if (string.IsNullOrEmpty(link.TargetNodeGUID)) continue;
 
-                var baseNode = Nodes.FirstOrDefault(n => n.GUID == link.BaseNodeGUID);
-                var targetNode = Nodes.FirstOrDefault(n => n.GUID == link.TargetNodeGUID);
+                var baseNode = Nodes.FirstOrDefault(n => n != null && n.GUID == link.BaseNodeGUID);
+                var targetNode = Nodes.FirstOrDefault(n => n != null && n.GUID == link.TargetNodeGUID);
                 if (baseNode == null || targetNode == null) continue;
 
-                Port outputPort = null;
+                Port outputPort;
 
                 if (baseNode.EntyPoint)
                 {
@@ -315,16 +294,20 @@ namespace Subtegral.DialogueSystem.Editor
         private void AddExposedProperties()
         {
             _graphView.ClearBlackBoardAndExposedProperties();
+            if (_container.ExposedProperties == null) return;
             foreach (var p in _container.ExposedProperties)
                 _graphView.AddPropertyToBlackBoard(p, true);
         }
 
         private void GenerateCommentBlocks()
         {
+            if (_container.CommentBlockData == null) return;
+
             foreach (var data in _container.CommentBlockData)
             {
+                if (data == null) continue;
                 var group = _graphView.CreateCommentBlock(new Rect(data.Position, _graphView.DefaultCommentBlockSize), data);
-                group.AddElements(Nodes.Where(n => data.ChildNodes.Contains(n.GUID)));
+                group.AddElements(Nodes.Where(n => n != null && data.ChildNodes.Contains(n.GUID)));
             }
         }
     }

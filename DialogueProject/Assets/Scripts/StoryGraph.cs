@@ -46,7 +46,7 @@ namespace Subtegral.DialogueSystem.Editor
 
             var fileNameTextField = new TextField("File Name:");
             fileNameTextField.SetValueWithoutNotify(_fileName);
-            fileNameTextField.RegisterValueChangedCallback(evt => _fileName = evt.newValue);
+            fileNameTextField.RegisterValueChangedCallback(evt => _fileName = evt.newValue?.Trim());
             toolbar.Add(fileNameTextField);
 
             toolbar.Add(new Button(() => RequestDataOperation(true)) { text = "Save Data" });
@@ -57,9 +57,9 @@ namespace Subtegral.DialogueSystem.Editor
 
         private void RequestDataOperation(bool save)
         {
-            if (string.IsNullOrEmpty(_fileName))
+            if (string.IsNullOrWhiteSpace(_fileName))
             {
-                EditorUtility.DisplayDialog("Invalid File name", "Please Enter a valid filename", "OK");
+                EditorUtility.DisplayDialog("Invalid File name", "Please enter a valid filename.", "OK");
                 return;
             }
 
@@ -72,7 +72,7 @@ namespace Subtegral.DialogueSystem.Editor
         {
             var miniMap = new MiniMap { anchored = true };
             var cords = _graphView.contentViewContainer.WorldToLocal(new Vector2(maxSize.x - 10, 30));
-            miniMap.SetPosition(new Rect(cords.x, cords.y, 200, 140));
+            miniMap.SetPosition(new Rect(cords.x, cords.y, 220, 160));
             _graphView.Add(miniMap);
         }
 
@@ -88,19 +88,28 @@ namespace Subtegral.DialogueSystem.Editor
 
             blackboard.editTextRequested = (_, element, newValue) =>
             {
+                newValue = (newValue ?? "").Trim();
+                if (string.IsNullOrEmpty(newValue))
+                {
+                    EditorUtility.DisplayDialog("Error", "Property name cannot be empty.", "OK");
+                    return;
+                }
+
                 var oldPropertyName = ((BlackboardField)element).text;
                 if (_graphView.ExposedProperties.Any(x => x.PropertyName == newValue))
                 {
-                    EditorUtility.DisplayDialog("Error", "This property name already exists, please chose another one.", "OK");
+                    EditorUtility.DisplayDialog("Error", "This property name already exists, please choose another one.", "OK");
                     return;
                 }
 
                 var targetIndex = _graphView.ExposedProperties.FindIndex(x => x.PropertyName == oldPropertyName);
+                if (targetIndex < 0) return;
+
                 _graphView.ExposedProperties[targetIndex].PropertyName = newValue;
                 ((BlackboardField)element).text = newValue;
             };
 
-            blackboard.SetPosition(new Rect(10, 30, 240, 320));
+            blackboard.SetPosition(new Rect(10, 30, 260, 340));
             _graphView.Add(blackboard);
             _graphView.Blackboard = blackboard;
         }

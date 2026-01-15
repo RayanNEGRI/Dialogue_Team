@@ -32,7 +32,6 @@ namespace Subtegral.DialogueSystem.Editor
                 new SearchTreeGroupEntry(new GUIContent("Nodes"), 1),
                 new SearchTreeEntry(new GUIContent("Dialogue Node", _indentationIcon)) { level = 2, userData = DialogueNodeType.Dialogue },
                 new SearchTreeEntry(new GUIContent("Branch Node", _indentationIcon)) { level = 2, userData = DialogueNodeType.Branch },
-                new SearchTreeEntry(new GUIContent("End Node", _indentationIcon)) { level = 2, userData = DialogueNodeType.End },
 
                 new SearchTreeGroupEntry(new GUIContent("Other"), 1),
                 new SearchTreeEntry(new GUIContent("Comment Block", _indentationIcon)) { level = 2, userData = "Comment" },
