@@ -13,7 +13,8 @@ namespace Subtegral.DialogueSystem.Runtime
     public class DialogueParser : MonoBehaviour
     {
         [Header("Settings")]
-        [SerializeField] private string tableName = "Dialogues"; // Nom de ta table de localization
+        [SerializeField] private string tableName = "Dialogues"; // Table pour les textes narratifs
+        [SerializeField] private string uiTableName = "UI";      // Table pour les boutons (Choix)
 
         [Header("References")]
         [SerializeField] private DialogueContainer dialogue;
@@ -71,7 +72,7 @@ namespace Subtegral.DialogueSystem.Runtime
                 return;
             }
 
-            _currentGuid = guid; 
+            _currentGuid = guid;
             ShowNode(node);
         }
 
@@ -105,7 +106,8 @@ namespace Subtegral.DialogueSystem.Runtime
 
             if (dialogueText != null)
             {
-                SetLocalizedText(node.DialogueText, dialogueText);
+                // --- MODIFICATION : On utilise 'tableName' pour le texte principal ---
+                SetLocalizedText(tableName, node.DialogueText, dialogueText);
             }
 
             foreach (Transform child in buttonContainer)
@@ -127,12 +129,14 @@ namespace Subtegral.DialogueSystem.Runtime
 
                 if (tmp != null)
                 {
-                    SetLocalizedText(key, tmp);
+                    // uitable pour les buttons
+                    SetLocalizedText(uiTableName, key, tmp);
                 }
                 else
                 {
                     var legacy = btn.GetComponentInChildren<Text>();
-                    if (legacy != null) SetLocalizedTextLegacy(key, legacy);
+                    
+                    if (legacy != null) SetLocalizedTextLegacy(uiTableName, key, legacy);
                 }
 
                 var target = choice.TargetNodeGUID;
@@ -140,9 +144,9 @@ namespace Subtegral.DialogueSystem.Runtime
             }
         }
 
-        private void SetLocalizedText(string key, TextMeshProUGUI targetText)
+        private void SetLocalizedText(string table, string key, TextMeshProUGUI targetText)
         {
-            var op = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(tableName, key.Trim());
+            var op = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(table, key.Trim());
 
             if (op.IsDone)
             {
@@ -158,9 +162,9 @@ namespace Subtegral.DialogueSystem.Runtime
             }
         }
 
-        private void SetLocalizedTextLegacy(string key, Text targetText)
+        private void SetLocalizedTextLegacy(string table, string key, Text targetText)
         {
-            var op = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(tableName, key.Trim());
+            var op = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(table, key.Trim());
             if (op.IsDone) targetText.text = ProcessProperties(op.Result);
             else op.Completed += (handle) => { if (targetText != null) targetText.text = ProcessProperties(handle.Result); };
         }

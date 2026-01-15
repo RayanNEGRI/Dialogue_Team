@@ -19,12 +19,12 @@ public class LocalizationManagerWindow : EditorWindow
         InterfaceUI
     }
 
-    // --- DONNÉES PERSISTANTES ---
+    // --- DONNEES PERSISTANTES ---
     [SerializeField] private StringTableCollection dialogueCollection;
     [SerializeField] private BDD_Dialogue dialogueBDD;
 
     [SerializeField] private StringTableCollection uiCollection;
-    [SerializeField] private BDD_UI uiBDD; // Utilise maintenant la classe spécifique BDD_UI
+    [SerializeField] private BDD_UI uiBDD; 
 
     // --- VARIABLES DE TRAVAIL ---
     private LocMode currentMode = LocMode.Dialogues;
@@ -321,7 +321,7 @@ public class LocalizationManagerWindow : EditorWindow
         GUILayout.Label($"ID Unique : {sharedEntry.Id}", EditorStyles.miniLabel);
         GUILayout.Space(20);
 
-        // --- ZONE RÉFÉRENCE ---
+        // --- ZONE REFERENCE ---
         GUILayout.Label($"Référence ({refLocale.name})", EditorStyles.boldLabel);
         string refText = "";
         if (refTable != null)
@@ -367,7 +367,6 @@ public class LocalizationManagerWindow : EditorWindow
                 }
                 else
                 {
-                    // Récupération depuis le ScriptableObject (Brouillon)
                     tempEditingText = GetDraftFromBDD(sharedEntry.Key, targetLocale.Identifier.Code);
                 }
                 lastEditedKeyId = selectedKeyId;
@@ -437,7 +436,7 @@ public class LocalizationManagerWindow : EditorWindow
         GUILayout.EndVertical();
     }
 
-    // --- LOGIQUE MÉTIER ---
+    // --- LOGIQUE METIER ---
 
     private void SaveDraftToBDD(string key, string langCode, string text)
     {
@@ -669,7 +668,7 @@ public class LocalizationManagerWindow : EditorWindow
 
     private string RemoveAccents(string text) => new string(text.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray());
 
-    // --- SYNC CSV ROBUSTE ---
+    // --- SYNC CSV---
 
     private void SyncCSVDirectly()
     {
