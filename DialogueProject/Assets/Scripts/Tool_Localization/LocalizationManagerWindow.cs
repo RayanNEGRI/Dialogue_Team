@@ -11,7 +11,7 @@ using System.IO;
 
 public class LocalizationManagerWindow : EditorWindow
 {
-    // --- DONNEES ---
+    // --- DONNÉES ---
     private StringTableCollection selectedCollection;
     private TextAsset csvFile;
     private BDD_Dialogue targetBDD;
@@ -140,7 +140,7 @@ public class LocalizationManagerWindow : EditorWindow
         DrawSeparator();
         GUILayout.Space(10);
 
-        // 4. CHOIX DE LA LANGUE D EDITION
+        // 4. CHOIX DE LA LANGUE D'ÉDITION
         if (activeLocales != null && activeLocales.Count > 0)
         {
             GUILayout.BeginHorizontal();
@@ -255,7 +255,7 @@ public class LocalizationManagerWindow : EditorWindow
         GUILayout.Label($"ID Unique : {sharedEntry.Id}", EditorStyles.miniLabel);
         GUILayout.Space(20);
 
-        // --- ZONE REFERENCE ---
+        // --- ZONE RÉFÉRENCE ---
         GUILayout.Label($"Référence ({refLocale.name})", EditorStyles.boldLabel);
         string refText = "";
         if (refTable != null)
@@ -368,7 +368,7 @@ public class LocalizationManagerWindow : EditorWindow
         GUILayout.EndVertical();
     }
 
-    // --- LOGIQUE METIER ---
+    // --- LOGIQUE MÉTIER ---
 
     private void SaveDraftToBDD(string key, string langCode, string text)
     {

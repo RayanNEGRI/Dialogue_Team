@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
+  m_Name: RDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
+  NodeLinks:
+  - BaseNodeGUID: 0ffda660-f32c-4c1a-95e5-7f3678c4ab03
+    PortName: Option 2
+    TargetNodeGUID: 3f6fb655-43f3-4538-bb4a-e818b4fe5286
+  - BaseNodeGUID: 0ffda660-f32c-4c1a-95e5-7f3678c4ab03
+    PortName: Option 1
+    TargetNodeGUID: 9f42412b-1c93-49c0-b09d-acf91dc1ae8a
+  - BaseNodeGUID: f4495f9c-3e3d-47b8-8fb8-9e306db3cf29
+    PortName: Next
+    TargetNodeGUID: 0ffda660-f32c-4c1a-95e5-7f3678c4ab03
+  DialogueNodeData:
+  - NodeGUID: 0ffda660-f32c-4c1a-95e5-7f3678c4ab03
+    DialogueText: zzz_2
+    Position: {x: 263, y: 200}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 9f42412b-1c93-49c0-b09d-acf91dc1ae8a
+    DialogueText: zzz_1
+    Position: {x: 540, y: 152}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 3f6fb655-43f3-4538-bb4a-e818b4fe5286
+    DialogueText: bbbb_1
+    Position: {x: 529, y: 296}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  ExposedProperties: []
+  CommentBlockData: []

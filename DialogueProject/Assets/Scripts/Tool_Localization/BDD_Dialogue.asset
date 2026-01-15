@@ -13,35 +13,35 @@ MonoBehaviour:
   m_Name: BDD_Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::BDD_Dialogue
   Entries:
-  - key: bnjr_1
+  - key: dlg_2
     translations:
     - languageCode: en
-      text: hello
+      text: 
     - languageCode: fr-FR
-      text: bonjour
-    - languageCode: de
-      text: guten morgen
-  - key: bnvn_1
+      text: aaaa
+    - languageCode: es
+      text: 
+  - key: zzz_2
     translations:
     - languageCode: en
-      text: welcome
+      text: 
     - languageCode: fr-FR
-      text: bienvenu
-    - languageCode: de
-      text: willkommen
-  - key: slt_1
+      text: zzz
+    - languageCode: es
+      text: 
+  - key: zzz_1
     translations:
     - languageCode: en
-      text: hey
+      text: 
     - languageCode: fr-FR
-      text: salut
-    - languageCode: de
-      text: hallo
-  - key: rvr_1
+      text: zzz
+    - languageCode: es
+      text: 
+  - key: bbbb_1
     translations:
     - languageCode: en
-      text: goodbye
+      text: 
     - languageCode: fr-FR
-      text: aurevoir
-    - languageCode: de
-      text: auf wiedersehen
+      text: bbbb
+    - languageCode: es
+      text: 

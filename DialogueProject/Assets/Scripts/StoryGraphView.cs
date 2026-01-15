@@ -199,7 +199,6 @@ namespace Subtegral.DialogueSystem.Editor
             {
                 AddStandardTextField(tempDialogueNode);
             }
-            // --- FIN LOGIQUE BDD ---
 
             var button = new Button(() => { AddChoicePort(tempDialogueNode); })
             {
