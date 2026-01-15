@@ -154,7 +154,6 @@ namespace Subtegral.DialogueSystem.Editor
             return node;
         }
 
-        // --- ICI LA MODIFICATION PRINCIPALE (Fusion BDD + Code A) ---
         private void BuildDialogueNodeUI(DialogueNode node)
         {
             // 1. Recherche de la BDD
@@ -206,7 +205,6 @@ namespace Subtegral.DialogueSystem.Editor
                 node.mainContainer.Add(dialogueField);
             }
 
-            // 4. Ajout du bouton "Add Choice" (Code A original)
             var addChoice = new Button(() =>
             {
                 var portId = Guid.NewGuid().ToString();
@@ -217,7 +215,6 @@ namespace Subtegral.DialogueSystem.Editor
 
             node.titleButtonContainer.Add(addChoice);
         }
-        // ------------------------------------------------------------
 
         private void BuildBranchNodeUI(DialogueNode node)
         {
@@ -357,8 +354,34 @@ namespace Subtegral.DialogueSystem.Editor
             foreach (var tf in node.mainContainer.Query<TextField>().ToList())
             {
                 if (tf.label == "Debug Label") tf.SetValueWithoutNotify(node.DebugLabel);
-                else if (tf.label == "Dialogue Text") tf.SetValueWithoutNotify(node.DialogueText);
                 else if (tf.label == "Branch Condition") tf.SetValueWithoutNotify(node.ConditionExpression);
+            }
+
+            var popup = node.mainContainer.Q<PopupField<string>>();
+            if (popup != null)
+            {
+                if (popup.choices.Contains(node.DialogueText))
+                {
+                    popup.value = node.DialogueText;
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(node.DialogueText))
+                    {
+                        popup.choices.Insert(0, node.DialogueText);
+                        popup.value = node.DialogueText;
+                    }
+                }
+            }
+            else
+            {
+                var tf = node.mainContainer.Q<TextField>("Dialogue Text"); 
+                if (tf != null) tf.SetValueWithoutNotify(node.DialogueText);
+
+                foreach (var textF in node.mainContainer.Query<TextField>().ToList())
+                {
+                    if (textF.label == "Dialogue Text") textF.SetValueWithoutNotify(node.DialogueText);
+                }
             }
         }
     }
