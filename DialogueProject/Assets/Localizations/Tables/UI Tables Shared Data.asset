@@ -10,35 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
-  m_Name: Dialogues Shared Data
+  m_Name: UI Tables Shared Data
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
-  m_TableCollectionName: Dialogues
-  m_TableCollectionNameGuidString: e6e2bf121cc2deb4099984f23f50c0b7
+  m_TableCollectionName: UI Tables
+  m_TableCollectionNameGuidString: f2bbdbf01776620439b070408fa6d0fa
   m_Entries:
-  - m_Id: 621770227994624
-    m_Key: bnjr
+  - m_Id: 1082194546688
+    m_Key: c1
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743360
-    m_Key: bnvn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 621770265743361
-    m_Key: slt
-    m_Metadata:
-      m_Items: []
-  - m_Id: 621770265743362
-    m_Key: rvr
+  - m_Id: 1082236489728
+    m_Key: c2
     m_Metadata:
       m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
-    rid: 3113098160377430120
+    rid: 3113098196091666512
   references:
     version: 2
     RefIds:
-    - rid: 3113098160377430120
+    - rid: 3113098196091666512
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1768326395968
+        m_CustomEpoch: 1768463170597

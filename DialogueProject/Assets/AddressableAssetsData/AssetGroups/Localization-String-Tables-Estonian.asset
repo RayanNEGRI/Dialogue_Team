@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Localization-String-Tables-German
+  m_Name: Localization-String-Tables-Estonian
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
-  m_GroupName: Localization-String-Tables-German
-  m_GUID: 2ad733ee8bf595e43aea83848045bc59
+  m_GroupName: Localization-String-Tables-Estonian
+  m_GUID: 5c8bc643099ad614197464bd6722ace9
   m_SerializeEntries: []
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: a7eb0f1b7a7e5fc47b60e6388151c397, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: f5d360fc997cbf84b8044a54f6644187, type: 2}
-    - {fileID: 11400000, guid: 33e4bfde0871c0a4d8d61e365e4931ff, type: 2}
+    - {fileID: 11400000, guid: 3ebbe0c3a0a7c29458f82b5ad030e789, type: 2}
+    - {fileID: 11400000, guid: 93ab3a72ad18a0940867ea56f158980b, type: 2}
