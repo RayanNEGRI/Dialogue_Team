@@ -1,25 +1,27 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Subtegral.DialogueSystem.DataContainers;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
-using Button = UnityEngine.UIElements.Button;
+using Subtegral.DialogueSystem.DataContainers;
 
 namespace Subtegral.DialogueSystem.Editor
 {
     public class StoryGraphView : GraphView
     {
-        public readonly Vector2 DefaultNodeSize = new Vector2(200, 150);
+        public readonly Vector2 DefaultNodeSize = new Vector2(380, 240);
         public readonly Vector2 DefaultCommentBlockSize = new Vector2(300, 200);
+
         public DialogueNode EntryPointNode;
         public Blackboard Blackboard = new Blackboard();
         public List<ExposedProperty> ExposedProperties { get; private set; } = new List<ExposedProperty>();
+
         private NodeSearchWindow _searchWindow;
+
+        public const string ChoiceLabelFieldName = "ChoiceLabelField";
+        public const string ChoiceCondFieldName = "ChoiceCondField";
 
         public StoryGraphView(StoryGraph editorWindow)
         {
@@ -40,15 +42,41 @@ namespace Subtegral.DialogueSystem.Editor
             AddSearchWindow(editorWindow);
         }
 
-
-        private void AddSearchWindow(StoryGraph editorWindow)
+        private void AddSearchWindow(EditorWindow editorWindow)
         {
             _searchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
             _searchWindow.Configure(editorWindow, this);
+
             nodeCreationRequest = context =>
                 SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
         }
 
+        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+        {
+            var compatible = new List<Port>();
+            ports.ForEach(port =>
+            {
+                if (startPort != port && startPort.node != port.node)
+                    compatible.Add(port);
+            });
+            return compatible;
+        }
+
+        public Group CreateCommentBlock(Rect rect, CommentBlockData data = null)
+        {
+            if (data == null)
+                data = new CommentBlockData();
+
+            var group = new Group
+            {
+                autoUpdateGeometry = true,
+                title = data.Title
+            };
+
+            AddElement(group);
+            group.SetPosition(rect);
+            return group;
+        }
 
         public void ClearBlackBoardAndExposedProperties()
         {
@@ -56,182 +84,234 @@ namespace Subtegral.DialogueSystem.Editor
             Blackboard.Clear();
         }
 
-        public Group CreateCommentBlock(Rect rect, CommentBlockData commentBlockData = null)
-        {
-            if(commentBlockData==null)
-                commentBlockData = new CommentBlockData();
-            var group = new Group
-            {
-                autoUpdateGeometry = true,
-                title = commentBlockData.Title
-            };
-            AddElement(group);
-            group.SetPosition(rect);
-            return group;
-        }
-
         public void AddPropertyToBlackBoard(ExposedProperty property, bool loadMode = false)
         {
-            var localPropertyName = property.PropertyName;
-            var localPropertyValue = property.PropertyValue;
+            var localName = property.PropertyName;
+            var localValue = property.PropertyValue;
+
             if (!loadMode)
             {
-                while (ExposedProperties.Any(x => x.PropertyName == localPropertyName))
-                    localPropertyName = $"{localPropertyName}(1)";
+                while (ExposedProperties.Any(x => x.PropertyName == localName))
+                    localName = $"{localName}(1)";
             }
 
             var item = ExposedProperty.CreateInstance();
-            item.PropertyName = localPropertyName;
-            item.PropertyValue = localPropertyValue;
+            item.PropertyName = localName;
+            item.PropertyValue = localValue;
             ExposedProperties.Add(item);
 
             var container = new VisualElement();
-            var field = new BlackboardField {text = localPropertyName, typeText = "string"};
+            var field = new BlackboardField { text = localName, typeText = "string" };
             container.Add(field);
 
-            var propertyValueTextField = new TextField("Value:")
+            var valueField = new TextField("Value:") { value = localValue };
+            valueField.RegisterValueChangedCallback(evt =>
             {
-                value = localPropertyValue
-            };
-            propertyValueTextField.RegisterValueChangedCallback(evt =>
-            {
-                var index = ExposedProperties.FindIndex(x => x.PropertyName == item.PropertyName);
-                ExposedProperties[index].PropertyValue = evt.newValue;
+                var idx = ExposedProperties.FindIndex(x => x.PropertyName == item.PropertyName);
+                ExposedProperties[idx].PropertyValue = evt.newValue;
             });
-            var sa = new BlackboardRow(field, propertyValueTextField);
-            container.Add(sa);
+
+            container.Add(new BlackboardRow(field, valueField));
             Blackboard.Add(container);
         }
 
-        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+        public DialogueNode CreateNode(string title, Vector2 position, DialogueNodeType type)
         {
-            var compatiblePorts = new List<Port>();
-            var startPortView = startPort;
-
-            ports.ForEach((port) =>
+            var node = new DialogueNode
             {
-                var portView = port;
-                if (startPortView != portView && startPortView.node != portView.node)
-                    compatiblePorts.Add(port);
-            });
-
-            return compatiblePorts;
-        }
-
-        public void CreateNewDialogueNode(string nodeName, Vector2 position)
-        {
-            AddElement(CreateNode(nodeName, position));
-        }
-
-        public DialogueNode CreateNode(string nodeName, Vector2 position)
-        {
-            var tempDialogueNode = new DialogueNode()
-            {
-                title = nodeName,
-                DialogueText = nodeName,
-                GUID = Guid.NewGuid().ToString()
+                GUID = Guid.NewGuid().ToString(),
+                NodeType = type,
+                title = type.ToString().ToUpper(),
+                DebugLabel = "",
+                DialogueText = "",
+                ConditionExpression = ""
             };
-            tempDialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
-            var inputPort = GetPortInstance(tempDialogueNode, Direction.Input, Port.Capacity.Multi);
+
+            node.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
+
+            var inputPort = GetPortInstance(node, Direction.Input, Port.Capacity.Multi);
             inputPort.portName = "Input";
-            tempDialogueNode.inputContainer.Add(inputPort);
-            tempDialogueNode.RefreshExpandedState();
-            tempDialogueNode.RefreshPorts();
-            tempDialogueNode.SetPosition(new Rect(position,
-                DefaultNodeSize)); //To-Do: implement screen center instantiation positioning
+            node.inputContainer.Add(inputPort);
 
-            var textField = new TextField("");
-            textField.RegisterValueChangedCallback(evt =>
+            var debugField = new TextField("Debug Label");
+            debugField.SetValueWithoutNotify(node.DebugLabel);
+            debugField.RegisterValueChangedCallback(e => node.DebugLabel = e.newValue);
+            node.mainContainer.Add(debugField);
+
+            if (type == DialogueNodeType.Dialogue)
+                BuildDialogueNodeUI(node);
+            else if (type == DialogueNodeType.Branch)
+                BuildBranchNodeUI(node);
+            else if (type == DialogueNodeType.End)
+                BuildEndNodeUI(node);
+
+            node.SetPosition(new Rect(position, DefaultNodeSize));
+            node.RefreshExpandedState();
+            node.RefreshPorts();
+
+            AddElement(node);
+            return node;
+        }
+
+        private void BuildDialogueNodeUI(DialogueNode node)
+        {
+            var dialogueField = new TextField("Dialogue Text") { multiline = true };
+            dialogueField.SetValueWithoutNotify(node.DialogueText);
+            dialogueField.RegisterValueChangedCallback(e => node.DialogueText = e.newValue);
+            node.mainContainer.Add(dialogueField);
+
+            var addChoice = new Button(() =>
             {
-                tempDialogueNode.DialogueText = evt.newValue;
-                tempDialogueNode.title = evt.newValue;
+                var portId = Guid.NewGuid().ToString();
+                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "Acheter", "");
+                AddChoicePort(node, portId, deletable: true);
+            })
+            { text = "Add Choice" };
+
+            node.titleButtonContainer.Add(addChoice);
+        }
+
+        private void BuildBranchNodeUI(DialogueNode node)
+        {
+            var condField = new TextField("Branch Condition");
+            condField.SetValueWithoutNotify(node.ConditionExpression);
+            condField.RegisterValueChangedCallback(e => node.ConditionExpression = e.newValue);
+            node.mainContainer.Add(condField);
+
+            EnsureFixedBranchPort(node, "true", "True");
+            EnsureFixedBranchPort(node, "false", "False");
+        }
+
+        private void EnsureFixedBranchPort(DialogueNode node, string portId, string label)
+        {
+            if (!node.Ports.ContainsKey(portId))
+                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, label, "");
+
+            AddChoicePort(node, portId, deletable: false);
+        }
+
+        private void BuildEndNodeUI(DialogueNode node)
+        {
+            var label = new Label("🏁 END");
+            label.style.unityTextAlign = TextAnchor.MiddleCenter;
+            label.style.marginTop = 12;
+            node.mainContainer.Add(label);
+        }
+
+        public void AddChoicePort(DialogueNode node, string portId, bool deletable)
+        {
+            if (!node.Ports.ContainsKey(portId))
+                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "Choix", "");
+
+            var data = node.Ports[portId];
+
+            var port = GetPortInstance(node, Direction.Output, Port.Capacity.Single);
+            port.userData = portId;
+
+            var typeLabel = port.contentContainer.Q<Label>("type");
+            if (typeLabel != null) port.contentContainer.Remove(typeLabel);
+
+            var labelField = new TextField { value = data.Label };
+            labelField.name = ChoiceLabelFieldName;
+            labelField.userData = portId;
+            labelField.RegisterValueChangedCallback(e =>
+            {
+                data.Label = e.newValue;
+                port.portName = e.newValue;
             });
-            textField.SetValueWithoutNotify(tempDialogueNode.title);
-            tempDialogueNode.mainContainer.Add(textField);
 
-            var button = new Button(() => { AddChoicePort(tempDialogueNode); })
+            var condField = new TextField { value = data.Condition };
+            condField.name = ChoiceCondFieldName;
+            condField.userData = portId;
+            condField.RegisterValueChangedCallback(e =>
             {
-                text = "Add Choice"
-            };
-            tempDialogueNode.titleButtonContainer.Add(button);
-            return tempDialogueNode;
-        }
+                data.Condition = e.newValue;
+            });
 
+            port.contentContainer.Add(new Label("Label"));
+            port.contentContainer.Add(labelField);
+            port.contentContainer.Add(new Label("Cond"));
+            port.contentContainer.Add(condField);
 
-        public void AddChoicePort(DialogueNode nodeCache, string overriddenPortName = "")
-        {
-            var generatedPort = GetPortInstance(nodeCache, Direction.Output);
-            var portLabel = generatedPort.contentContainer.Q<Label>("type");
-            generatedPort.contentContainer.Remove(portLabel);
-
-            var outputPortCount = nodeCache.outputContainer.Query("connector").ToList().Count();
-            var outputPortName = string.IsNullOrEmpty(overriddenPortName)
-                ? $"Option {outputPortCount + 1}"
-                : overriddenPortName;
-
-
-            var textField = new TextField()
+            if (deletable)
             {
-                name = string.Empty,
-                value = outputPortName
-            };
-            textField.RegisterValueChangedCallback(evt => generatedPort.portName = evt.newValue);
-            generatedPort.contentContainer.Add(new Label("  "));
-            generatedPort.contentContainer.Add(textField);
-            var deleteButton = new Button(() => RemovePort(nodeCache, generatedPort))
-            {
-                text = "X"
-            };
-            generatedPort.contentContainer.Add(deleteButton);
-            generatedPort.portName = outputPortName;
-            nodeCache.outputContainer.Add(generatedPort);
-            nodeCache.RefreshPorts();
-            nodeCache.RefreshExpandedState();
-        }
-
-        private void RemovePort(Node node, Port socket)
-        {
-            var targetEdge = edges.ToList()
-                .Where(x => x.output.portName == socket.portName && x.output.node == socket.node);
-            if (targetEdge.Any())
-            {
-                var edge = targetEdge.First();
-                edge.input.Disconnect(edge);
-                RemoveElement(targetEdge.First());
+                var delete = new Button(() => RemovePort(node, portId)) { text = "X" };
+                port.contentContainer.Add(delete);
             }
 
-            node.outputContainer.Remove(socket);
+            port.portName = data.Label;
+            node.outputContainer.Add(port);
+
             node.RefreshPorts();
             node.RefreshExpandedState();
         }
 
-        private Port GetPortInstance(DialogueNode node, Direction nodeDirection,
-            Port.Capacity capacity = Port.Capacity.Single)
+        private void RemovePort(DialogueNode node, string portId)
         {
-            return node.InstantiatePort(Orientation.Horizontal, nodeDirection, capacity, typeof(float));
+            var edgesToRemove = edges.ToList().Where(e =>
+                e.output != null &&
+                e.output.node == node &&
+                (e.output.userData as string) == portId
+            ).ToList();
+
+            foreach (var edge in edgesToRemove)
+            {
+                edge.input?.Disconnect(edge);
+                edge.output?.Disconnect(edge);
+                RemoveElement(edge);
+            }
+
+            var port = node.outputContainer.Children().OfType<Port>()
+                .FirstOrDefault(p => (p.userData as string) == portId);
+
+            if (port != null)
+                node.outputContainer.Remove(port);
+
+            node.Ports.Remove(portId);
+
+            node.RefreshPorts();
+            node.RefreshExpandedState();
+        }
+
+        private Port GetPortInstance(DialogueNode node, Direction direction, Port.Capacity capacity)
+        {
+            return node.InstantiatePort(Orientation.Horizontal, direction, capacity, typeof(float));
         }
 
         private DialogueNode GetEntryPointNodeInstance()
         {
-            var nodeCache = new DialogueNode()
+            var node = new DialogueNode
             {
                 title = "START",
                 GUID = Guid.NewGuid().ToString(),
-                DialogueText = "ENTRYPOINT",
-                EntyPoint = true
+                EntyPoint = true,
+                NodeType = DialogueNodeType.Dialogue
             };
 
-            var generatedPort = GetPortInstance(nodeCache, Direction.Output);
-            generatedPort.portName = "Next";
-            nodeCache.outputContainer.Add(generatedPort);
+            var outPort = GetPortInstance(node, Direction.Output, Port.Capacity.Single);
+            outPort.portName = "Next";
+            outPort.userData = "start";
+            node.outputContainer.Add(outPort);
 
-            nodeCache.capabilities &= ~Capabilities.Movable;
-            nodeCache.capabilities &= ~Capabilities.Deletable;
+            node.capabilities &= ~Capabilities.Movable;
+            node.capabilities &= ~Capabilities.Deletable;
 
-            nodeCache.RefreshExpandedState();
-            nodeCache.RefreshPorts();
-            nodeCache.SetPosition(new Rect(100, 200, 100, 150));
-            return nodeCache;
+            node.SetPosition(new Rect(100, 200, 140, 110));
+            node.RefreshExpandedState();
+            node.RefreshPorts();
+
+            EntryPointNode = node;
+            return node;
+        }
+
+        public void RefreshNodeFields(DialogueNode node)
+        {
+            foreach (var tf in node.mainContainer.Query<TextField>().ToList())
+            {
+                if (tf.label == "Debug Label") tf.SetValueWithoutNotify(node.DebugLabel);
+                else if (tf.label == "Dialogue Text") tf.SetValueWithoutNotify(node.DialogueText);
+                else if (tf.label == "Branch Condition") tf.SetValueWithoutNotify(node.ConditionExpression);
+            }
         }
     }
 }
