@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
+  m_Name: aaaa
+  m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
+  NodeLinks:
+  - BaseNodeGUID: 48e39347-d32d-4512-b798-ff245e584ae1
+    TargetNodeGUID: 7415ceb4-9a8d-47f2-a549-da77eca88be3
+    PortName: Next
+    PortId: start
+    PortLabel: Next
+    ConditionExpression: 
+  - BaseNodeGUID: 7415ceb4-9a8d-47f2-a549-da77eca88be3
+    TargetNodeGUID: 51908bd6-044a-42da-bef0-35cf8865d48e
+    PortName: chx
+    PortId: 0b564a5d-4f8e-41e3-af78-ef712be52bad
+    PortLabel: chx
+    ConditionExpression: 
+  - BaseNodeGUID: 7415ceb4-9a8d-47f2-a549-da77eca88be3
+    TargetNodeGUID: 90c82406-99d6-43e2-9d93-791c38a36216
+    PortName: chx_2
+    PortId: 03e5a591-e8fc-41e7-a8f7-b90f7c123af5
+    PortLabel: chx_2
+    ConditionExpression: 
+  DialogueNodeData:
+  - NodeGUID: 51908bd6-044a-42da-bef0-35cf8865d48e
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: slt
+    ConditionExpression: 
+    Position: {x: 563, y: 75}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 90c82406-99d6-43e2-9d93-791c38a36216
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: rvr
+    ConditionExpression: 
+    Position: {x: 575, y: 248}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 7415ceb4-9a8d-47f2-a549-da77eca88be3
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: bnvn
+    ConditionExpression: 
+    Position: {x: 232, y: 179}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  ExposedProperties: []
+  CommentBlockData: []

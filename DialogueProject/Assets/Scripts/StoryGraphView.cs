@@ -156,7 +156,7 @@ namespace Subtegral.DialogueSystem.Editor
 
         private void BuildDialogueNodeUI(DialogueNode node)
         {
-            // 1. Recherche de la BDD
+            // 1. Recherche de la BDD Dialogue
             var guids = AssetDatabase.FindAssets("t:BDD_Dialogue");
             BDD_Dialogue bdd = null;
             if (guids.Length > 0)
@@ -208,7 +208,8 @@ namespace Subtegral.DialogueSystem.Editor
             var addChoice = new Button(() =>
             {
                 var portId = Guid.NewGuid().ToString();
-                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "Acheter", "");
+                // --- MODIFICATION ICI : Chaîne vide au lieu de "Choix" ---
+                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "", "");
                 AddChoicePort(node, portId, deletable: true);
             })
             { text = "Add Choice" };
@@ -246,7 +247,8 @@ namespace Subtegral.DialogueSystem.Editor
         public void AddChoicePort(DialogueNode node, string portId, bool deletable)
         {
             if (!node.Ports.ContainsKey(portId))
-                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "Choix", "");
+                // --- MODIFICATION ICI : Chaîne vide au lieu de "Choix" ---
+                node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "", "");
 
             var data = node.Ports[portId];
 
@@ -256,14 +258,74 @@ namespace Subtegral.DialogueSystem.Editor
             var typeLabel = port.contentContainer.Q<Label>("type");
             if (typeLabel != null) port.contentContainer.Remove(typeLabel);
 
-            var labelField = new TextField { value = data.Label };
-            labelField.name = ChoiceLabelFieldName;
-            labelField.userData = portId;
-            labelField.RegisterValueChangedCallback(e =>
+            // --- GESTION BDD_UI ---
+
+            // 1. Recherche de la BDD UI
+            var guids = AssetDatabase.FindAssets("t:BDD_UI");
+            BDD_UI bddUI = null;
+            if (guids.Length > 0)
             {
-                data.Label = e.newValue;
-                port.portName = e.newValue;
-            });
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                bddUI = AssetDatabase.LoadAssetAtPath<BDD_UI>(path);
+            }
+
+            port.contentContainer.Add(new Label("Label"));
+
+            // 2. Si BDD_UI existe et a des entrées -> MENU DÉROULANT
+            if (bddUI != null && bddUI.Entries != null && bddUI.Entries.Count > 0)
+            {
+                List<string> displayOptions = bddUI.Entries.Select(x => x.key).ToList();
+                string defaultValue = displayOptions[0]; // Défaut = 1er de la liste
+
+                // Logique de Load / Récupération robuste
+                if (displayOptions.Contains(data.Label))
+                {
+                    defaultValue = data.Label;
+                }
+                else if (!string.IsNullOrEmpty(data.Label))
+                {
+                    // Si la valeur sauvegardée n'existe plus dans la BDD, on l'ajoute temporairement
+                    displayOptions.Insert(0, data.Label);
+                    defaultValue = data.Label;
+                }
+
+                // Application de la valeur si c'était vide (pour que data.Label prenne la valeur de la BDD)
+                if (string.IsNullOrEmpty(data.Label))
+                {
+                    data.Label = defaultValue;
+                }
+                // Mise à jour visuelle du nom du port
+                port.portName = defaultValue;
+
+                var popup = new PopupField<string>(displayOptions, defaultValue);
+                popup.name = ChoiceLabelFieldName;
+                popup.userData = portId;
+
+                popup.RegisterValueChangedCallback(evt =>
+                {
+                    data.Label = evt.newValue;
+                    port.portName = evt.newValue;
+                });
+
+                port.contentContainer.Add(popup);
+            }
+            else
+            {
+                // 3. SINON (Fallback) -> TEXTFIELD CLASSIQUE
+                var labelField = new TextField { value = data.Label };
+                labelField.name = ChoiceLabelFieldName;
+                labelField.userData = portId;
+                labelField.RegisterValueChangedCallback(e =>
+                {
+                    data.Label = e.newValue;
+                    port.portName = e.newValue;
+                });
+
+                // Si pas de BDD, on met à jour le portName avec ce qu'on a
+                port.portName = data.Label;
+
+                port.contentContainer.Add(labelField);
+            }
 
             var condField = new TextField { value = data.Condition };
             condField.name = ChoiceCondFieldName;
@@ -273,8 +335,6 @@ namespace Subtegral.DialogueSystem.Editor
                 data.Condition = e.newValue;
             });
 
-            port.contentContainer.Add(new Label("Label"));
-            port.contentContainer.Add(labelField);
             port.contentContainer.Add(new Label("Cond"));
             port.contentContainer.Add(condField);
 
@@ -284,7 +344,6 @@ namespace Subtegral.DialogueSystem.Editor
                 port.contentContainer.Add(delete);
             }
 
-            port.portName = data.Label;
             node.outputContainer.Add(port);
 
             node.RefreshPorts();
@@ -375,7 +434,7 @@ namespace Subtegral.DialogueSystem.Editor
             }
             else
             {
-                var tf = node.mainContainer.Q<TextField>("Dialogue Text"); 
+                var tf = node.mainContainer.Q<TextField>("Dialogue Text");
                 if (tf != null) tf.SetValueWithoutNotify(node.DialogueText);
 
                 foreach (var textF in node.mainContainer.Query<TextField>().ToList())

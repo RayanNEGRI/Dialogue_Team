@@ -101,19 +101,27 @@ namespace Subtegral.DialogueSystem.Editor
                     var portId = port.userData as string;
                     if (string.IsNullOrEmpty(portId)) continue;
 
-                    TextField labelField = null;
-                    TextField condField = null;
+                    // --- MODIFICATION ICI : Récupération correcte de la valeur ---
+                    string labelValue = "";
+                    string condValue = "";
 
-                    foreach (var tf in port.contentContainer.Query<TextField>().ToList())
+                    // 1. Chercher si c'est un PopupField (Liste déroulante)
+                    var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
+                    if (popup != null)
                     {
-                        if ((tf.userData as string) != portId) continue;
-
-                        if (tf.name == StoryGraphView.ChoiceLabelFieldName) labelField = tf;
-                        else if (tf.name == StoryGraphView.ChoiceCondFieldName) condField = tf;
+                        labelValue = popup.value;
+                    }
+                    else
+                    {
+                        // 2. Sinon chercher si c'est un TextField (Champ texte classique)
+                        var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
+                        if (tf != null) labelValue = tf.value;
                     }
 
-                    var label = labelField != null ? labelField.value : "";
-                    var cond = condField != null ? condField.value : "";
+                    // Récupération de la condition
+                    var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
+                    if (condTf != null) condValue = condTf.value;
+                    // -----------------------------------------------------------
 
                     var edge = Edges.FirstOrDefault(e => e.output == port);
 
@@ -121,9 +129,9 @@ namespace Subtegral.DialogueSystem.Editor
                     {
                         BaseNodeGUID = node.GUID,
                         PortId = portId,
-                        PortLabel = label ?? "",
-                        ConditionExpression = cond ?? "",
-                        PortName = label ?? "",
+                        PortLabel = labelValue ?? "",
+                        ConditionExpression = condValue ?? "",
+                        PortName = labelValue ?? "",
                         TargetNodeGUID = edge != null ? ((DialogueNode)edge.input.node).GUID : null
                     });
                 }
@@ -245,13 +253,29 @@ namespace Subtegral.DialogueSystem.Editor
 
             if (port == null) return;
 
-            foreach (var tf in port.contentContainer.Query<TextField>().ToList())
-            {
-                if ((tf.userData as string) != portId) continue;
+            // --- MODIFICATION ICI : Mise à jour de la UI au chargement ---
 
-                if (tf.name == StoryGraphView.ChoiceLabelFieldName) tf.SetValueWithoutNotify(label);
-                else if (tf.name == StoryGraphView.ChoiceCondFieldName) tf.SetValueWithoutNotify(cond);
+            // 1. Mise à jour si c'est un PopupField
+            var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
+            if (popup != null)
+            {
+                popup.value = label;
             }
+
+            // 2. Mise à jour si c'est un TextField
+            var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
+            if (tf != null)
+            {
+                tf.SetValueWithoutNotify(label);
+            }
+
+            // 3. Mise à jour de la condition
+            var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
+            if (condTf != null)
+            {
+                condTf.SetValueWithoutNotify(cond);
+            }
+            // -------------------------------------------------------------
 
             port.portName = label;
         }

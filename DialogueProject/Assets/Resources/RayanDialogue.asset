@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
-  m_Name: RayanDial
+  m_Name: RayanDialogue
   m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
   NodeLinks:
   - BaseNodeGUID: fa878341-4653-4184-898c-802270b2bd87
@@ -21,15 +21,15 @@ MonoBehaviour:
     ConditionExpression: 
   - BaseNodeGUID: ab84fc1a-728e-4549-a8ca-4135b3a3f95f
     TargetNodeGUID: 8d0f3e46-2c67-4e7d-8879-49c46acc180f
-    PortName: Acheter
+    PortName: 
     PortId: d5935359-ea8b-4201-b432-718f54f4614b
-    PortLabel: Acheter
+    PortLabel: 
     ConditionExpression: 
   - BaseNodeGUID: ab84fc1a-728e-4549-a8ca-4135b3a3f95f
     TargetNodeGUID: 49695575-eff1-45d9-8004-03cf515bd14a
-    PortName: Acheter
+    PortName: 
     PortId: 7fe886e9-4b55-4319-b6e0-3f0b543d48ee
-    PortLabel: Acheter
+    PortLabel: 
     ConditionExpression: 
   DialogueNodeData:
   - NodeGUID: 8d0f3e46-2c67-4e7d-8879-49c46acc180f
