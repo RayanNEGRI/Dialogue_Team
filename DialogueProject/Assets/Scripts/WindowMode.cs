@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Codice.Client.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 
-namespace Assets.GraphNode.NodeBasedDialogueSystem_master.NodeBasedDialogueSystem_master.com.subtegral.dialoguesystem.Editor.Graph
-{
+/*namespace Assets.GraphNode.NodeBasedDialogueSystem_master.NodeBasedDialogueSystem_master.com.subtegral.dialoguesystem.Editor.Graph*/
+/*{*/
 
     public enum Mode 
     {
@@ -15,7 +17,8 @@ namespace Assets.GraphNode.NodeBasedDialogueSystem_master.NodeBasedDialogueSyste
         Popup
     }
 
-    internal class WindowMode : ScriptableObject
+[CreateAssetMenu(fileName = "WindowMode", menuName = "ScriptableObjects/WMode")]
+public class WindowMode : ScriptableObject
     {
         public Mode mode;
 
@@ -42,19 +45,25 @@ namespace Assets.GraphNode.NodeBasedDialogueSystem_master.NodeBasedDialogueSyste
             
         }
 
-        public void Panel() 
+        public void Panel()
         {
-            //TODO
+
+            Debug.Log("Panel");
+            TextMeshProUGUI[] TMP = GameObject.FindObjectsByType<TextMeshProUGUI>(FindObjectsSortMode.None);
+            foreach (TextMeshProUGUI tmp in TMP) 
+            {
+                //Console.WriteLine(tmp.name);
+            }
         }
 
         public void Bubble()
         {
-            //TODO
+            Debug.Log("Bubble");
         }
 
         public void Popup() 
         {
-            //TODO
+            Debug.Log("Popup");
         }
     }
-}
+/*}*/
