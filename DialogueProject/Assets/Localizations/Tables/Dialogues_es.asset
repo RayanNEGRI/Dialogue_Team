@@ -80,6 +80,10 @@ MonoBehaviour:
     m_Localized: "Has elegido el barco peque\xF1o. Tengo dos en stock"
     m_Metadata:
       m_Items: []
+  - m_Id: 967640509206535
+    m_Localized: No tienes suficiente dinero
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

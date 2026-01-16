@@ -105,3 +105,11 @@ MonoBehaviour:
       text: "Merci d'avoir achet\xE9 La Calypso"
     - languageCode: es
       text: Gracias por comprar el Calypso
+  - key: tnspssszdr
+    translations:
+    - languageCode: en
+      text: You don't have enough money
+    - languageCode: fr-FR
+      text: Tu n'as pas assez d'argent
+    - languageCode: es
+      text: No tienes suficiente dinero

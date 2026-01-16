@@ -79,6 +79,10 @@ MonoBehaviour:
     m_Localized: You chose the small ship. I have two in stock
     m_Metadata:
       m_Items: []
+  - m_Id: 967640509206535
+    m_Localized: You don't have enough money
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -35,7 +35,7 @@ MonoBehaviour:
   - NodeGUID: 2e0875a9-9e3c-4aea-8ecd-55f063dbb774
     NodeType: 0
     DebugLabel: 
-    DialogueText: mrcdvrchtl_2
+    DialogueText: tnspssszdr
     ConditionExpression: 
     Position: {x: 485, y: 99}
     Speaker: {fileID: 0}

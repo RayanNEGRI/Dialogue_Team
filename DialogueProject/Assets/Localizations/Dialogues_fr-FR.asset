@@ -255,6 +255,10 @@ MonoBehaviour:
     m_Localized: bonjour
     m_Metadata:
       m_Items: []
+  - m_Id: 967640509206535
+    m_Localized: Tu n'as pas assez d'argent
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
