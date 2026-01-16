@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 282d56e42ddb59148b3053814902f124, type: 3}
+  m_Name: BDD_UI
+  m_EditorClassIdentifier: Assembly-CSharp::BDD_UI
+  Entries:
+  - key: chx
+    translations:
+    - languageCode: en
+      text: Choice 1
+    - languageCode: fr-FR
+      text: Choix1
+    - languageCode: es
+      text: "Opci\xF3n 1"
+  - key: chx_2
+    translations:
+    - languageCode: en
+      text: Choice 2
+    - languageCode: fr-FR
+      text: Choix2
+    - languageCode: es
+      text: "Opci\xF3n 2"
+  - key: chsrngrndn
+    translations:
+    - languageCode: en
+      text: Choose a Big Ship
+    - languageCode: fr-FR
+      text: Choisir un Grand Navire
+    - languageCode: es
+      text: Elegir un Barco Grande
+  - key: chsrnpttnv
+    translations:
+    - languageCode: en
+      text: Choose a Small Ship
+    - languageCode: fr-FR
+      text: Choisir un Petit Navire
+    - languageCode: es
+      text: "Elegir un Barco Peque\xF1o"
+  - key: lrmsttnc
+    translations:
+    - languageCode: en
+      text: RMS Titanic
+    - languageCode: fr-FR
+      text: Le RMS Titanic
+    - languageCode: es
+      text: RMS Titanic
+  - key: lsntmr
+    translations:
+    - languageCode: en
+      text: "Santa Mar\xEDa"
+    - languageCode: fr-FR
+      text: La Santa Maria
+    - languageCode: es
+      text: "La Santa Mar\xEDa"
+  - key: thsndsnn
+    translations:
+    - languageCode: en
+      text: Thousand Sunny
+    - languageCode: fr-FR
+      text: Thousand Sunny
+    - languageCode: es
+      text: Thousand Sunny
+  - key: lclps
+    translations:
+    - languageCode: en
+      text: Calypso
+    - languageCode: fr-FR
+      text: La Calypso
+    - languageCode: es
+      text: Calypso

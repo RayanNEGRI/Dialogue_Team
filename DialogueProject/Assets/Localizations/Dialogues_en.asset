@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Dialogues_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: e6e2bf121cc2deb4099984f23f50c0b7, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 578658776535043
+    m_Localized: goodbye
+    m_Metadata:
+      m_Items: []
+  - m_Id: 578658776535041
+    m_Localized: welcome
+    m_Metadata:
+      m_Items: []
+  - m_Id: 578658776535040
+    m_Localized: hello
+    m_Metadata:
+      m_Items: []
+  - m_Id: 578658776535042
+    m_Localized: hi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903680
+    m_Localized: hello
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903681
+    m_Localized: welcome
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903687
+    m_Localized: Thanks for buying RMS Titanic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903688
+    m_Localized: Thanks for buying Santa Maria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903689
+    m_Localized: Thanks for buying Thousand Sunny
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903690
+    m_Localized: Thanks for buying Calypso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903683
+    m_Localized: goodbye
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903682
+    m_Localized: hi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903684
+    m_Localized: 'Hi pirate, here is my shop! We offer two types of ships: a big
+      but slow ship, or a small but faster one.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903685
+    m_Localized: You chose the big ship. I have two in stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903686
+    m_Localized: You chose the small ship. I have two in stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 967640509206535
+    m_Localized: You don't have enough money
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

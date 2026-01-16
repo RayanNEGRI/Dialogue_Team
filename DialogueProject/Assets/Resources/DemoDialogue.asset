@@ -1,0 +1,230 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
+  m_Name: DemoDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
+  NodeLinks:
+  - BaseNodeGUID: 42437dc8-e450-4458-99ed-fda6f9cacc51
+    TargetNodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    PortName: Next
+    PortId: start
+    PortLabel: Next
+    ConditionExpression: 
+  - BaseNodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    TargetNodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    PortName: chsrngrndn
+    PortId: b508e2f4-7b3a-4084-a225-6294cdfb17e6
+    PortLabel: chsrngrndn
+    ConditionExpression: 
+  - BaseNodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    TargetNodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    PortName: chsrnpttnv
+    PortId: c122142f-6e25-4b95-b3cf-68e1089a9bf8
+    PortLabel: chsrnpttnv
+    ConditionExpression: 
+  - BaseNodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    TargetNodeGUID: 08967e6a-627d-40dd-9699-a11377adb207
+    PortName: lrmsttnc
+    PortId: b802b442-3f00-47e7-bc5f-f179dd52b29b
+    PortLabel: lrmsttnc
+    ConditionExpression: 
+  - BaseNodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    TargetNodeGUID: 0908b76e-dda0-4aed-bb83-42a6e0bb730c
+    PortName: lsntmr
+    PortId: d9cd92ec-8e02-42c9-8dfe-dae44ac890d3
+    PortLabel: lsntmr
+    ConditionExpression: 
+  - BaseNodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    TargetNodeGUID: c1a12b2b-de04-481c-b2fd-0b4b190eebcc
+    PortName: thsndsnn
+    PortId: 6aff7bc6-bd8b-463b-bad6-380317dbfcd3
+    PortLabel: thsndsnn
+    ConditionExpression: 
+  - BaseNodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    TargetNodeGUID: 31733ba3-295f-40c2-9e50-18a09b4a42c3
+    PortName: lclps
+    PortId: 28c465ba-56ac-491a-a1b2-2031647aa809
+    PortLabel: lclps
+    ConditionExpression: 
+  - BaseNodeGUID: 08967e6a-627d-40dd-9699-a11377adb207
+    TargetNodeGUID: 7914c2b4-698e-4007-9080-973630aae09b
+    PortName: True
+    PortId: true
+    PortLabel: True
+    ConditionExpression: 
+  - BaseNodeGUID: 08967e6a-627d-40dd-9699-a11377adb207
+    TargetNodeGUID: ebc84d30-4654-4e82-b2e8-a4c2e8affabd
+    PortName: False
+    PortId: false
+    PortLabel: False
+    ConditionExpression: 
+  - BaseNodeGUID: 0908b76e-dda0-4aed-bb83-42a6e0bb730c
+    TargetNodeGUID: edc001b4-ddcc-4f27-989a-817ef72d970a
+    PortName: True
+    PortId: true
+    PortLabel: True
+    ConditionExpression: 
+  - BaseNodeGUID: 0908b76e-dda0-4aed-bb83-42a6e0bb730c
+    TargetNodeGUID: beb10291-219e-49dc-8ff9-6e1555c0c9de
+    PortName: False
+    PortId: false
+    PortLabel: False
+    ConditionExpression: 
+  - BaseNodeGUID: c1a12b2b-de04-481c-b2fd-0b4b190eebcc
+    TargetNodeGUID: 454e7ff1-6077-4b0e-9e6b-d8d77417cebe
+    PortName: True
+    PortId: true
+    PortLabel: True
+    ConditionExpression: 
+  - BaseNodeGUID: c1a12b2b-de04-481c-b2fd-0b4b190eebcc
+    TargetNodeGUID: 2c871693-bead-4ad7-8919-186886591512
+    PortName: False
+    PortId: false
+    PortLabel: False
+    ConditionExpression: 
+  - BaseNodeGUID: 31733ba3-295f-40c2-9e50-18a09b4a42c3
+    TargetNodeGUID: 9f53cad1-4353-4332-8aab-64bb7330ebec
+    PortName: True
+    PortId: true
+    PortLabel: True
+    ConditionExpression: 
+  - BaseNodeGUID: 31733ba3-295f-40c2-9e50-18a09b4a42c3
+    TargetNodeGUID: 06ff9aa3-85e5-40a1-b125-33e07c82d390
+    PortName: False
+    PortId: false
+    PortLabel: False
+    ConditionExpression: 
+  DialogueNodeData:
+  - NodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: sltprtvlmb
+    ConditionExpression: 
+    Position: {x: 228.66667, y: 200}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tschslgrnd
+    ConditionExpression: 
+    Position: {x: 873.3334, y: -39.333332}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tschslpttn
+    ConditionExpression: 
+    Position: {x: 837.3334, y: 576.6667}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 08967e6a-627d-40dd-9699-a11377adb207
+    NodeType: 1
+    DebugLabel: 
+    DialogueText: 
+    ConditionExpression: '[Gold] >= 10000'
+    Position: {x: 1501.3333, y: -221.33333}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 7914c2b4-698e-4007-9080-973630aae09b
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl
+    ConditionExpression: 
+    Position: {x: 1774.6666, y: -301.33334}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 0908b76e-dda0-4aed-bb83-42a6e0bb730c
+    NodeType: 1
+    DebugLabel: 
+    DialogueText: 
+    ConditionExpression: '[Gold] >= 10000'
+    Position: {x: 1478, y: 84.666664}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: edc001b4-ddcc-4f27-989a-817ef72d970a
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl_2
+    ConditionExpression: 
+    Position: {x: 1782.6666, y: 70.666664}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: beb10291-219e-49dc-8ff9-6e1555c0c9de
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tnspssszdr
+    ConditionExpression: 
+    Position: {x: 1793.3333, y: 229.33333}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: ebc84d30-4654-4e82-b2e8-a4c2e8affabd
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tnspssszdr
+    ConditionExpression: 
+    Position: {x: 1788.6666, y: -137.33334}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 454e7ff1-6077-4b0e-9e6b-d8d77417cebe
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl_3
+    ConditionExpression: 
+    Position: {x: 1685.3333, y: 436.66666}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 2c871693-bead-4ad7-8919-186886591512
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tnspssszdr
+    ConditionExpression: 
+    Position: {x: 1695.3333, y: 588.6667}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 9f53cad1-4353-4332-8aab-64bb7330ebec
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl_4
+    ConditionExpression: 
+    Position: {x: 1692.6666, y: 742.6667}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 06ff9aa3-85e5-40a1-b125-33e07c82d390
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tnspssszdr
+    ConditionExpression: 
+    Position: {x: 1690.6666, y: 908.6667}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: c1a12b2b-de04-481c-b2fd-0b4b190eebcc
+    NodeType: 1
+    DebugLabel: 
+    DialogueText: 
+    ConditionExpression: '[Gold] >= 1000'
+    Position: {x: 1415.3333, y: 496.6667}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 31733ba3-295f-40c2-9e50-18a09b4a42c3
+    NodeType: 1
+    DebugLabel: 
+    DialogueText: 
+    ConditionExpression: '[Gold] >= 1000'
+    Position: {x: 1416.6666, y: 740}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  ExposedProperties:
+  - PropertyName: Gold
+    PropertyValue: 1000
+  CommentBlockData: []
