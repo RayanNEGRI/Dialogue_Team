@@ -22,6 +22,11 @@ namespace Subtegral.DialogueSystem.Runtime
         [SerializeField] private Button choicePrefab;
         [SerializeField] private Transform buttonContainer;
 
+        // --- AJOUT : Paramètres de taille de police ---
+        [Header("Text Auto-Sizing")]
+        [SerializeField] private float minFontSize = 20f; // Taille minimum (pour ne pas devenir illisible)
+        [SerializeField] private float maxFontSize = 72f; // Taille maximum (pour les textes courts)
+
         private string _currentGuid;
 
         private void OnEnable()
@@ -50,6 +55,20 @@ namespace Subtegral.DialogueSystem.Runtime
                 Debug.LogError("[DialogueParser] DialogueContainer not assigned.");
                 return;
             }
+
+            // --- MODIFICATION ICI : Configuration Auto-Size ---
+            if (dialogueText != null)
+            {
+                // Active l'ajustement automatique de la taille
+                dialogueText.enableAutoSizing = true;
+                // Définit la limite basse (pour que ça reste lisible)
+                dialogueText.fontSizeMin = minFontSize;
+                // Définit la limite haute (pour les titres ou mots seuls)
+                dialogueText.fontSizeMax = maxFontSize;
+                // S'assure que le texte revient à la ligne
+                dialogueText.enableWordWrapping = true;
+            }
+            // --------------------------------------------------
 
             var startLink = GetStartLink(dialogue);
             if (startLink == null || string.IsNullOrEmpty(startLink.TargetNodeGUID))
