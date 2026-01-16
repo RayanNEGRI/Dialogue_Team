@@ -1,11 +1,11 @@
-﻿using Subtegral.DialogueSystem.DataContainers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Subtegral.DialogueSystem.DataContainers;
 
 namespace Subtegral.DialogueSystem.Editor
 {
@@ -60,6 +60,7 @@ namespace Subtegral.DialogueSystem.Editor
             {
                 if (node == null || node.EntyPoint) continue;
 
+                // --- Conservation logique Script A (Gestion du type End) ---
                 var nodeType = node.NodeType == DialogueNodeType.End ? DialogueNodeType.Dialogue : node.NodeType;
 
                 asset.DialogueNodeData.Add(new DialogueNodeData
@@ -105,27 +106,38 @@ namespace Subtegral.DialogueSystem.Editor
                     var portId = port.userData as string;
                     if (string.IsNullOrEmpty(portId)) continue;
 
-                    node.Ports.TryGetValue(portId, out var data);
+                    // --- FUSION ICI : Utilisation de la logique B (Lecture UI) dans la boucle A ---
 
-                    var label = data?.Label ?? "";
-                    var cond = data?.Condition ?? "";
+                    string labelValue = "";
+                    string condValue = "";
 
-                    if (string.IsNullOrWhiteSpace(label))
+                    // 1. Priorité absolue : Lire le Menu Déroulant (Script B Fix)
+                    var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
+                    if (popup != null)
                     {
-                        var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
-                        if (popup != null) label = popup.value ?? "";
-
-                        if (string.IsNullOrWhiteSpace(label))
-                        {
-                            var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
-                            if (tf != null) label = tf.value ?? "";
-                        }
+                        labelValue = popup.value;
+                    }
+                    else
+                    {
+                        // 2. Sinon lire le champ texte
+                        var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
+                        if (tf != null) labelValue = tf.value;
                     }
 
-                    if (string.IsNullOrWhiteSpace(cond))
+                    // Si jamais l'UI est vide (ce qui ne devrait pas arriver), fallback sur la donnée interne (Sécurité Script A)
+                    if (string.IsNullOrEmpty(labelValue))
                     {
-                        var ctf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
-                        if (ctf != null) cond = ctf.value ?? "";
+                        node.Ports.TryGetValue(portId, out var internalData);
+                        if (internalData != null) labelValue = internalData.Label;
+                    }
+
+                    // Récupération condition
+                    var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
+                    if (condTf != null) condValue = condTf.value;
+                    else
+                    {
+                        node.Ports.TryGetValue(portId, out var internalData);
+                        if (internalData != null) condValue = internalData.Condition;
                     }
 
                     var edge = Edges.FirstOrDefault(e => e.output == port);
@@ -134,9 +146,9 @@ namespace Subtegral.DialogueSystem.Editor
                     {
                         BaseNodeGUID = node.GUID,
                         PortId = portId,
-                        PortLabel = label ?? "",
-                        ConditionExpression = cond ?? "",
-                        PortName = label ?? "",
+                        PortLabel = labelValue ?? "",
+                        ConditionExpression = condValue ?? "",
+                        PortName = labelValue ?? "",
                         TargetNodeGUID = edge != null ? ((DialogueNode)edge.input.node).GUID : null
                     });
                 }
@@ -210,6 +222,7 @@ namespace Subtegral.DialogueSystem.Editor
             {
                 if (data == null || string.IsNullOrEmpty(data.NodeGUID)) continue;
 
+                // --- Conservation logique Script A ---
                 var t = data.NodeType == DialogueNodeType.End ? DialogueNodeType.Dialogue : data.NodeType;
 
                 var node = _graphView.CreateNode(t.ToString(), data.Position, t);
@@ -233,10 +246,12 @@ namespace Subtegral.DialogueSystem.Editor
                         if (string.IsNullOrEmpty(portId)) continue;
                         if (!node.Ports.ContainsKey(portId)) continue;
 
-                        node.Ports[portId].Label = portId.Equals("true", StringComparison.OrdinalIgnoreCase) ? "True" : "False";
-                        node.Ports[portId].Condition = "";
-                    }
+                        node.Ports[portId].Label = link.PortLabel ?? "";
+                        node.Ports[portId].Condition = link.ConditionExpression ?? "";
 
+                        // --- AJOUT IMPORTANT : Force update UI (Script B) ---
+                        ForcePortUI(node, portId, link.PortLabel ?? "", link.ConditionExpression ?? "");
+                    }
                     continue;
                 }
 
@@ -252,10 +267,43 @@ namespace Subtegral.DialogueSystem.Editor
                         );
 
                     _graphView.AddChoicePort(node, portId, true);
-                }
 
-                _graphView.RefreshNodeFields(node);
+                    // --- AJOUT IMPORTANT : Force update UI (Script B) ---
+                    ForcePortUI(node, portId, link.PortLabel ?? "", link.ConditionExpression ?? "");
+                }
             }
+        }
+
+        // --- AJOUT METHODE SCRIPT B (Nécessaire pour le chargement visuel correct) ---
+        private void ForcePortUI(DialogueNode node, string portId, string label, string cond)
+        {
+            var port = node.outputContainer.Children().OfType<Port>()
+                .FirstOrDefault(p => (p.userData as string) == portId);
+
+            if (port == null) return;
+
+            // 1. Update PopupField
+            var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
+            if (popup != null)
+            {
+                popup.value = label;
+            }
+
+            // 2. Update TextField
+            var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
+            if (tf != null)
+            {
+                tf.SetValueWithoutNotify(label);
+            }
+
+            // 3. Update Condition
+            var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
+            if (condTf != null)
+            {
+                condTf.SetValueWithoutNotify(cond);
+            }
+
+            port.portName = label;
         }
 
         private void ConnectNodes()
