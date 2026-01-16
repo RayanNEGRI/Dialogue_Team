@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
-using UnityEditor.UIElements; // Nécessaire pour PopupField
 using UnityEngine;
 using UnityEngine.UIElements;
 using Subtegral.DialogueSystem.DataContainers;
@@ -24,9 +23,13 @@ namespace Subtegral.DialogueSystem.Editor
         public const string ChoiceLabelFieldName = "ChoiceLabelField";
         public const string ChoiceCondFieldName = "ChoiceCondField";
 
+        private const string ChoicesHeaderName = "ChoicesHeader";
+
         public StoryGraphView(StoryGraph editorWindow)
         {
-            styleSheets.Add(Resources.Load<StyleSheet>("NarrativeGraph"));
+            var graphStyle = Resources.Load<StyleSheet>("NarrativeGraph");
+            if (graphStyle != null) styleSheets.Add(graphStyle);
+
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
 
             this.AddManipulator(new ContentDragger());
@@ -39,7 +42,6 @@ namespace Subtegral.DialogueSystem.Editor
             grid.StretchToParentSize();
 
             AddElement(GetEntryPointNodeInstance());
-
             AddSearchWindow(editorWindow);
         }
 
@@ -57,8 +59,10 @@ namespace Subtegral.DialogueSystem.Editor
             var compatible = new List<Port>();
             ports.ForEach(port =>
             {
-                if (startPort != port && startPort.node != port.node)
-                    compatible.Add(port);
+                if (startPort == port) return;
+                if (startPort.node == port.node) return;
+                if (startPort.direction == port.direction) return;
+                compatible.Add(port);
             });
             return compatible;
         }
@@ -102,6 +106,8 @@ namespace Subtegral.DialogueSystem.Editor
             ExposedProperties.Add(item);
 
             var container = new VisualElement();
+            container.style.flexDirection = FlexDirection.Column;
+
             var field = new BlackboardField { text = localName, typeText = "string" };
             container.Add(field);
 
@@ -109,7 +115,7 @@ namespace Subtegral.DialogueSystem.Editor
             valueField.RegisterValueChangedCallback(evt =>
             {
                 var idx = ExposedProperties.FindIndex(x => x.PropertyName == item.PropertyName);
-                ExposedProperties[idx].PropertyValue = evt.newValue;
+                if (idx >= 0) ExposedProperties[idx].PropertyValue = evt.newValue ?? "";
             });
 
             container.Add(new BlackboardRow(field, valueField));
@@ -118,17 +124,21 @@ namespace Subtegral.DialogueSystem.Editor
 
         public DialogueNode CreateNode(string title, Vector2 position, DialogueNodeType type)
         {
+            if (type == DialogueNodeType.End)
+                type = DialogueNodeType.Dialogue;
+
             var node = new DialogueNode
             {
                 GUID = Guid.NewGuid().ToString(),
                 NodeType = type,
-                title = type.ToString().ToUpper(),
+                title = type == DialogueNodeType.Branch ? "BRANCH" : "DIALOGUE",
                 DebugLabel = "",
                 DialogueText = "",
                 ConditionExpression = ""
             };
 
-            node.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
+            var nodeStyle = Resources.Load<StyleSheet>("Node");
+            if (nodeStyle != null) node.styleSheets.Add(nodeStyle);
 
             var inputPort = GetPortInstance(node, Direction.Input, Port.Capacity.Multi);
             inputPort.portName = "Input";
@@ -136,15 +146,13 @@ namespace Subtegral.DialogueSystem.Editor
 
             var debugField = new TextField("Debug Label");
             debugField.SetValueWithoutNotify(node.DebugLabel);
-            debugField.RegisterValueChangedCallback(e => node.DebugLabel = e.newValue);
+            debugField.RegisterValueChangedCallback(e => node.DebugLabel = e.newValue ?? "");
             node.mainContainer.Add(debugField);
 
             if (type == DialogueNodeType.Dialogue)
                 BuildDialogueNodeUI(node);
-            else if (type == DialogueNodeType.Branch)
+            else
                 BuildBranchNodeUI(node);
-            else if (type == DialogueNodeType.End)
-                BuildEndNodeUI(node);
 
             node.SetPosition(new Rect(position, DefaultNodeSize));
             node.RefreshExpandedState();
@@ -156,72 +164,61 @@ namespace Subtegral.DialogueSystem.Editor
 
         private void BuildDialogueNodeUI(DialogueNode node)
         {
-            // 1. Recherche de la BDD Dialogue
             var guids = AssetDatabase.FindAssets("t:BDD_Dialogue");
-            BDD_Dialogue bdd = null;
-            if (guids.Length > 0)
+            UnityEngine.Object bddObj = null;
+            if (guids != null && guids.Length > 0)
             {
-                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                bdd = AssetDatabase.LoadAssetAtPath<BDD_Dialogue>(path);
+                var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                bddObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
             }
 
-            // 2. Si BDD trouvée et non vide -> Menu Déroulant
-            if (bdd != null && bdd.Entries != null && bdd.Entries.Count > 0)
-            {
-                List<string> displayOptions = bdd.Entries.Select(x => x.key).ToList();
-                string defaultValue = displayOptions[0];
+            var dialogueKeys = AssetKeyProvider.TryGetKeysFromSerializedArrayStringField(bddObj, "Entries", "key");
 
-                if (displayOptions.Contains(node.DialogueText))
-                {
+            if (dialogueKeys.Count > 0)
+            {
+                var options = dialogueKeys;
+                var defaultValue = options[0];
+
+                if (options.Contains(node.DialogueText))
                     defaultValue = node.DialogueText;
-                }
                 else if (!string.IsNullOrEmpty(node.DialogueText))
                 {
-                    displayOptions.Insert(0, node.DialogueText);
+                    options.Insert(0, node.DialogueText);
                     defaultValue = node.DialogueText;
                 }
 
-                var popup = new PopupField<string>("Clé Dialogue", displayOptions, defaultValue);
-
-                popup.RegisterValueChangedCallback(evt =>
-                {
-                    node.DialogueText = evt.newValue;
-                    node.title = evt.newValue;
-                });
-
-                // Initialisation des valeurs
+                var popup = new PopupField<string>("Clé Dialogue", options, defaultValue);
+                popup.RegisterValueChangedCallback(evt => node.DialogueText = evt.newValue ?? "");
                 node.DialogueText = defaultValue;
-                if (string.IsNullOrEmpty(node.title) || node.title == "DIALOGUE")
-                    node.title = defaultValue;
-
                 node.mainContainer.Add(popup);
             }
             else
             {
-                // 3. Fallback : Si pas de BDD, on met le TextField classique
                 var dialogueField = new TextField("Dialogue Text") { multiline = true };
                 dialogueField.SetValueWithoutNotify(node.DialogueText);
-                dialogueField.RegisterValueChangedCallback(e => node.DialogueText = e.newValue);
+                dialogueField.RegisterValueChangedCallback(e => node.DialogueText = e.newValue ?? "");
                 node.mainContainer.Add(dialogueField);
             }
 
             var addChoice = new Button(() =>
             {
                 var portId = Guid.NewGuid().ToString();
-                // --- MODIFICATION ICI : Chaîne vide au lieu de "Choix" ---
                 node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "", "");
                 AddChoicePort(node, portId, deletable: true);
+                EnsureChoicesHeaderVisibility(node);
             })
             { text = "Add Choice" };
 
             node.titleButtonContainer.Add(addChoice);
+
+            EnsureChoicesHeaderVisibility(node);
         }
 
         private void BuildBranchNodeUI(DialogueNode node)
         {
             var condField = new TextField("Branch Condition");
-            condField.SetValueWithoutNotify(node.ConditionExpression);
-            condField.RegisterValueChangedCallback(e => node.ConditionExpression = e.newValue);
+            condField.SetValueWithoutNotify(node.ConditionExpression ?? "");
+            condField.RegisterValueChangedCallback(e => node.ConditionExpression = e.newValue ?? "");
             node.mainContainer.Add(condField);
 
             EnsureFixedBranchPort(node, "true", "True");
@@ -233,121 +230,219 @@ namespace Subtegral.DialogueSystem.Editor
             if (!node.Ports.ContainsKey(portId))
                 node.Ports[portId] = new DialogueNode.ChoicePortData(portId, label, "");
 
+            node.Ports[portId].Label = label;
             AddChoicePort(node, portId, deletable: false);
         }
 
-        private void BuildEndNodeUI(DialogueNode node)
+        private void EnsureChoicesHeaderVisibility(DialogueNode node)
         {
-            var label = new Label("🏁 END");
-            label.style.unityTextAlign = TextAnchor.MiddleCenter;
-            label.style.marginTop = 12;
-            node.mainContainer.Add(label);
+            if (node == null) return;
+            if (node.NodeType != DialogueNodeType.Dialogue) return;
+
+            var hasAnyChoices = node.outputContainer.Children().OfType<Port>()
+                .Any(p => p != null && p.direction == Direction.Output && p.userData is string s && !string.IsNullOrEmpty(s));
+
+            var header = node.outputContainer.Q<VisualElement>(ChoicesHeaderName);
+
+            if (!hasAnyChoices)
+            {
+                if (header != null)
+                {
+                    node.outputContainer.Remove(header);
+                    node.RefreshPorts();
+                    node.RefreshExpandedState();
+                }
+                return;
+            }
+
+            if (header != null) return;
+
+            header = new VisualElement { name = ChoicesHeaderName };
+            header.pickingMode = PickingMode.Ignore;
+            header.style.flexDirection = FlexDirection.Row;
+            header.style.alignItems = Align.Center;
+            header.style.justifyContent = Justify.FlexStart;
+            header.style.marginTop = 6;
+            header.style.marginBottom = 4;
+            header.style.paddingLeft = 6;
+            header.style.paddingRight = 6;
+
+            var l = new Label("Label");
+            l.style.minWidth = 160;
+            l.style.flexGrow = 1;
+            l.style.opacity = 0.85f;
+
+            var c = new Label("Condition");
+            c.style.minWidth = 160;
+            c.style.flexGrow = 1;
+            c.style.opacity = 0.85f;
+
+            var sps = new VisualElement();
+            sps.style.width = 28;
+
+            header.Add(l);
+            header.Add(c);
+            header.Add(sps);
+
+            node.outputContainer.Insert(0, header);
+            node.RefreshPorts();
+            node.RefreshExpandedState();
         }
 
         public void AddChoicePort(DialogueNode node, string portId, bool deletable)
         {
             if (!node.Ports.ContainsKey(portId))
-                // --- MODIFICATION ICI : Chaîne vide au lieu de "Choix" ---
                 node.Ports[portId] = new DialogueNode.ChoicePortData(portId, "", "");
-
-            var data = node.Ports[portId];
 
             var port = GetPortInstance(node, Direction.Output, Port.Capacity.Single);
             port.userData = portId;
+            port.portName = deletable ? "" : (node.Ports[portId].Label ?? "");
 
             var typeLabel = port.contentContainer.Q<Label>("type");
             if (typeLabel != null) port.contentContainer.Remove(typeLabel);
 
-            // --- GESTION BDD_UI ---
+            var nameLabel = port.contentContainer.Q<Label>("portName");
+            if (nameLabel != null) nameLabel.style.display = DisplayStyle.None;
 
-            // 1. Recherche de la BDD UI
-            var guids = AssetDatabase.FindAssets("t:BDD_UI");
-            BDD_UI bddUI = null;
-            if (guids.Length > 0)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                bddUI = AssetDatabase.LoadAssetAtPath<BDD_UI>(path);
-            }
+            port.style.width = Length.Percent(100);
+            port.style.marginBottom = 6;
 
-            port.contentContainer.Add(new Label("Label"));
-
-            // 2. Si BDD_UI existe et a des entrées -> MENU DÉROULANT
-            if (bddUI != null && bddUI.Entries != null && bddUI.Entries.Count > 0)
-            {
-                List<string> displayOptions = bddUI.Entries.Select(x => x.key).ToList();
-                string defaultValue = displayOptions[0]; // Défaut = 1er de la liste
-
-                // Logique de Load / Récupération robuste
-                if (displayOptions.Contains(data.Label))
-                {
-                    defaultValue = data.Label;
-                }
-                else if (!string.IsNullOrEmpty(data.Label))
-                {
-                    // Si la valeur sauvegardée n'existe plus dans la BDD, on l'ajoute temporairement
-                    displayOptions.Insert(0, data.Label);
-                    defaultValue = data.Label;
-                }
-
-                // Application de la valeur si c'était vide (pour que data.Label prenne la valeur de la BDD)
-                if (string.IsNullOrEmpty(data.Label))
-                {
-                    data.Label = defaultValue;
-                }
-                // Mise à jour visuelle du nom du port
-                port.portName = defaultValue;
-
-                var popup = new PopupField<string>(displayOptions, defaultValue);
-                popup.name = ChoiceLabelFieldName;
-                popup.userData = portId;
-
-                popup.RegisterValueChangedCallback(evt =>
-                {
-                    data.Label = evt.newValue;
-                    port.portName = evt.newValue;
-                });
-
-                port.contentContainer.Add(popup);
-            }
-            else
-            {
-                // 3. SINON (Fallback) -> TEXTFIELD CLASSIQUE
-                var labelField = new TextField { value = data.Label };
-                labelField.name = ChoiceLabelFieldName;
-                labelField.userData = portId;
-                labelField.RegisterValueChangedCallback(e =>
-                {
-                    data.Label = e.newValue;
-                    port.portName = e.newValue;
-                });
-
-                // Si pas de BDD, on met à jour le portName avec ce qu'on a
-                port.portName = data.Label;
-
-                port.contentContainer.Add(labelField);
-            }
-
-            var condField = new TextField { value = data.Condition };
-            condField.name = ChoiceCondFieldName;
-            condField.userData = portId;
-            condField.RegisterValueChangedCallback(e =>
-            {
-                data.Condition = e.newValue;
-            });
-
-            port.contentContainer.Add(new Label("Cond"));
-            port.contentContainer.Add(condField);
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.Center;
+            row.style.justifyContent = Justify.SpaceBetween;
+            row.style.flexGrow = 1;
+            row.style.width = Length.Percent(100);
 
             if (deletable)
             {
-                var delete = new Button(() => RemovePort(node, portId)) { text = "X" };
-                port.contentContainer.Add(delete);
+                VisualElement labelFieldElement;
+
+                var guidsUI = AssetDatabase.FindAssets("t:BDD_UI");
+                UnityEngine.Object bddUIObj = null;
+                if (guidsUI != null && guidsUI.Length > 0)
+                {
+                    var path = AssetDatabase.GUIDToAssetPath(guidsUI[0]);
+                    bddUIObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                }
+
+                var uiKeys = AssetKeyProvider.TryGetKeysFromSerializedArrayStringField(bddUIObj, "Entries", "key");
+
+                if (uiKeys.Count > 0)
+                {
+                    var saved = node.Ports[portId].Label ?? "";
+                    if (!string.IsNullOrWhiteSpace(saved) && !uiKeys.Contains(saved))
+                        uiKeys.Insert(0, saved);
+
+                    var initial = !string.IsNullOrWhiteSpace(saved) ? saved : uiKeys[0];
+
+                    var popup = new PopupField<string>(uiKeys, initial);
+                    popup.name = ChoiceLabelFieldName;
+                    popup.userData = portId;
+                    popup.style.minWidth = 160;
+                    popup.style.flexGrow = 1;
+                    popup.style.marginRight = 10;
+
+                    popup.RegisterValueChangedCallback(evt =>
+                    {
+                        var id = popup.userData as string;
+                        if (!string.IsNullOrEmpty(id) && node.Ports.ContainsKey(id))
+                            node.Ports[id].Label = evt.newValue ?? "";
+
+                        port.portName = "";
+                    });
+
+                    popup.SetValueWithoutNotify(initial);
+                    labelFieldElement = popup;
+                }
+                else
+                {
+                    var labelField = new TextField { value = node.Ports[portId].Label ?? "" };
+                    labelField.name = ChoiceLabelFieldName;
+                    labelField.userData = portId;
+                    labelField.style.minWidth = 160;
+                    labelField.style.flexGrow = 1;
+                    labelField.style.marginRight = 10;
+
+                    labelField.RegisterValueChangedCallback(e =>
+                    {
+                        var id = labelField.userData as string;
+                        if (!string.IsNullOrEmpty(id) && node.Ports.ContainsKey(id))
+                            node.Ports[id].Label = e.newValue ?? "";
+
+                        port.portName = "";
+                    });
+
+                    labelFieldElement = labelField;
+                }
+
+                var condField = new TextField { value = node.Ports[portId].Condition ?? "" };
+                condField.name = ChoiceCondFieldName;
+                condField.userData = portId;
+                condField.style.minWidth = 160;
+                condField.style.flexGrow = 1;
+                condField.style.marginRight = 10;
+
+                condField.RegisterValueChangedCallback(e =>
+                {
+                    var id = condField.userData as string;
+                    if (!string.IsNullOrEmpty(id) && node.Ports.ContainsKey(id))
+                        node.Ports[id].Condition = e.newValue ?? "";
+                });
+
+                var delete = new Button(() => RemovePort(node, portId)) { text = "✕" };
+                delete.style.width = 26;
+                delete.style.height = 18;
+                delete.style.marginLeft = 2;
+
+                row.Add(labelFieldElement);
+                row.Add(condField);
+                row.Add(delete);
+
+                port.contentContainer.style.flexDirection = FlexDirection.Row;
+                port.contentContainer.style.alignItems = Align.Center;
+                port.contentContainer.style.justifyContent = Justify.SpaceBetween;
+                port.contentContainer.style.flexGrow = 1;
+
+                port.contentContainer.Add(row);
+
+                var conn = port.contentContainer.Q<VisualElement>("connector");
+                if (conn != null)
+                {
+                    port.contentContainer.Remove(conn);
+                    port.contentContainer.Add(conn);
+                }
+            }
+            else
+            {
+                var tag = new Label(node.Ports[portId].Label ?? "");
+                tag.style.flexGrow = 1;
+                tag.style.marginRight = 10;
+                tag.style.opacity = 0.95f;
+
+                row.Add(tag);
+
+                port.contentContainer.style.flexDirection = FlexDirection.Row;
+                port.contentContainer.style.alignItems = Align.Center;
+                port.contentContainer.style.justifyContent = Justify.SpaceBetween;
+                port.contentContainer.style.flexGrow = 1;
+
+                port.contentContainer.Add(row);
+
+                var conn = port.contentContainer.Q<VisualElement>("connector");
+                if (conn != null)
+                {
+                    port.contentContainer.Remove(conn);
+                    port.contentContainer.Add(conn);
+                }
             }
 
             node.outputContainer.Add(port);
 
             node.RefreshPorts();
             node.RefreshExpandedState();
+
+            EnsureChoicesHeaderVisibility(node);
         }
 
         private void RemovePort(DialogueNode node, string portId)
@@ -375,6 +470,8 @@ namespace Subtegral.DialogueSystem.Editor
 
             node.RefreshPorts();
             node.RefreshExpandedState();
+
+            EnsureChoicesHeaderVisibility(node);
         }
 
         private Port GetPortInstance(DialogueNode node, Direction direction, Port.Capacity capacity)
@@ -412,34 +509,64 @@ namespace Subtegral.DialogueSystem.Editor
         {
             foreach (var tf in node.mainContainer.Query<TextField>().ToList())
             {
-                if (tf.label == "Debug Label") tf.SetValueWithoutNotify(node.DebugLabel);
-                else if (tf.label == "Branch Condition") tf.SetValueWithoutNotify(node.ConditionExpression);
+                if (tf.label == "Debug Label") tf.SetValueWithoutNotify(node.DebugLabel ?? "");
+                else if (tf.label == "Branch Condition") tf.SetValueWithoutNotify(node.ConditionExpression ?? "");
             }
 
             var popup = node.mainContainer.Q<PopupField<string>>();
             if (popup != null)
             {
-                if (popup.choices.Contains(node.DialogueText))
-                {
-                    popup.value = node.DialogueText;
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(node.DialogueText))
-                    {
-                        popup.choices.Insert(0, node.DialogueText);
-                        popup.value = node.DialogueText;
-                    }
-                }
+                var desired = node.DialogueText ?? "";
+                if (!string.IsNullOrEmpty(desired) && !popup.choices.Contains(desired))
+                    popup.choices.Insert(0, desired);
+
+                if (string.IsNullOrEmpty(desired) && popup.choices.Count > 0)
+                    desired = popup.choices[0];
+
+                popup.SetValueWithoutNotify(desired);
+                node.DialogueText = desired;
             }
             else
             {
-                var tf = node.mainContainer.Q<TextField>("Dialogue Text");
-                if (tf != null) tf.SetValueWithoutNotify(node.DialogueText);
-
                 foreach (var textF in node.mainContainer.Query<TextField>().ToList())
                 {
-                    if (textF.label == "Dialogue Text") textF.SetValueWithoutNotify(node.DialogueText);
+                    if (textF.label == "Dialogue Text") textF.SetValueWithoutNotify(node.DialogueText ?? "");
+                }
+            }
+
+            EnsureChoicesHeaderVisibility(node);
+        }
+
+        private static class AssetKeyProvider
+        {
+            public static List<string> TryGetKeysFromSerializedArrayStringField(UnityEngine.Object assetObj, string arrayName, string keyField)
+            {
+                try
+                {
+                    if (assetObj == null) return new List<string>();
+                    var so = new SerializedObject(assetObj);
+                    var arr = so.FindProperty(arrayName);
+                    if (arr == null || !arr.isArray) return new List<string>();
+
+                    var keys = new List<string>(arr.arraySize);
+                    for (var i = 0; i < arr.arraySize; i++)
+                    {
+                        var element = arr.GetArrayElementAtIndex(i);
+                        if (element == null) continue;
+                        var kp = element.FindPropertyRelative(keyField);
+                        if (kp == null || kp.propertyType != SerializedPropertyType.String) continue;
+                        var s = kp.stringValue;
+                        if (string.IsNullOrWhiteSpace(s)) continue;
+                        keys.Add(s);
+                    }
+
+                    keys = keys.Distinct().ToList();
+                    keys.Sort(StringComparer.Ordinal);
+                    return keys;
+                }
+                catch
+                {
+                    return new List<string>();
                 }
             }
         }
