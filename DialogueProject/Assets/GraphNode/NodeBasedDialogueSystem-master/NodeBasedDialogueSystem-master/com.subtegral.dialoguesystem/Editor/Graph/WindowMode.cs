@@ -48,13 +48,13 @@ public class WindowMode : ScriptableObject
         public void Panel()
         {
 
-            Debug.Log("Panel");
-            TextMeshProUGUI[] TMP = GameObject.FindObjectsByType<TextMeshProUGUI>(FindObjectsSortMode.None);
-            foreach (TextMeshProUGUI tmp in TMP) 
-            {
-                //Console.WriteLine(tmp.name);
-            }
+        Debug.Log("Panel");
+        TextMeshProUGUI[] TMP = GameObject.FindObjectsByType<TextMeshProUGUI>(FindObjectsSortMode.None);
+        foreach (TextMeshProUGUI tmp in TMP)
+        {
+            //Console.WriteLine(tmp.name);
         }
+    }
 
         public void Bubble()
         {

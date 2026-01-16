@@ -23,10 +23,16 @@ namespace Subtegral.DialogueSystem.Runtime
         [SerializeField] private Button choicePrefab;
         [SerializeField] private Transform buttonContainer;
 
+        [Header("Window Mode")]
+        [SerializeField] WindowMode WindowMode;
+        [SerializeField] private Mode mode;
+
         private void Start()
         {
             var narrativeData = dialogue.NodeLinks.First();
             ProceedToNarrative(narrativeData.TargetNodeGUID);
+            WindowMode.SwitchWindowMode(mode);
+            
         }
 
         private void ProceedToNarrative(string narrativeDataGUID)
