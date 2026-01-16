@@ -1,19 +1,34 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
+using Subtegral.DialogueSystem.DataContainers;
 
 namespace Subtegral.DialogueSystem.Editor
 {
     public class DialogueNode : Node
     {
-        public string DialogueText;
         public string GUID;
         public bool EntyPoint = false;
 
-        // Ajouts pour le Speaker
-        public ScriptableObject Speaker;
-        public string MoodKey;
+        public DialogueNodeType NodeType = DialogueNodeType.Dialogue;
+
+        public string DebugLabel = "";
+        public string DialogueText = "";
+        public string ConditionExpression = "";
+
+        public Dictionary<string, ChoicePortData> Ports = new Dictionary<string, ChoicePortData>();
+
+        public class ChoicePortData
+        {
+            public string PortId;
+            public string Label;
+            public string Condition;
+
+            public ChoicePortData(string portId, string label, string condition)
+            {
+                PortId = portId;
+                Label = label;
+                Condition = condition;
+            }
+        }
     }
 }

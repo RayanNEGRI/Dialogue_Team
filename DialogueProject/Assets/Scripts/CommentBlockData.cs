@@ -9,6 +9,6 @@ namespace Subtegral.DialogueSystem.DataContainers
     {
         public List<string> ChildNodes = new List<string>();
         public Vector2 Position;
-        public string Title= "Comment Block";
+        public string Title = "Comment Block";
     }
 }

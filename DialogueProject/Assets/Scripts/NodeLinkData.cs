@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace Subtegral.DialogueSystem.DataContainers
 {
@@ -7,7 +6,12 @@ namespace Subtegral.DialogueSystem.DataContainers
     public class NodeLinkData
     {
         public string BaseNodeGUID;
-        public string PortName;
         public string TargetNodeGUID;
+
+        public string PortName;
+
+        public string PortId;
+        public string PortLabel;
+        public string ConditionExpression;
     }
 }
