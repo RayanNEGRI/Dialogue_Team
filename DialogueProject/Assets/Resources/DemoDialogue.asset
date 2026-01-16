@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
-  m_Name: TestEND
+  m_Name: DemoDialogue
   m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
   NodeLinks:
   - BaseNodeGUID: 42437dc8-e450-4458-99ed-fda6f9cacc51
