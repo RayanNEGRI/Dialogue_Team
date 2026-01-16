@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fc5b852d62e099448b8f6cd804137f7, type: 3}
+  m_Name: WindowMode
+  m_EditorClassIdentifier: Assembly-CSharp::WindowMode
+  PanelPrefab: {fileID: 4058463548795861432, guid: faf7b5ad9386b0646bd60443bf07db33, type: 3}
+  BubblePrefab: {fileID: 3689564905752682850, guid: ae1121f3db184d44e8e07210ba88e89b, type: 3}
+  PopupPrefab: {fileID: 3113686256777525330, guid: 0b970598818a857409f73479be424616, type: 3}
+  dialogueTextt: {fileID: 6781343630798193123, guid: dc9bcd5db3c113f459e7201c552f5b3b, type: 3}
+  mode: 0

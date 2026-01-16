@@ -8,8 +8,8 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 using Subtegral.DialogueSystem.DataContainers;
 
-namespace Subtegral.DialogueSystem.Runtime
-{
+/*namespace Subtegral.DialogueSystem.Runtime*/
+
     public class DialogueParser : MonoBehaviour
     {
         [Header("Settings")]
@@ -26,6 +26,11 @@ namespace Subtegral.DialogueSystem.Runtime
         [Header("Text Auto-Sizing")]
         [SerializeField] private float minFontSize = 20f; // Taille minimum (pour ne pas devenir illisible)
         [SerializeField] private float maxFontSize = 72f; // Taille maximum (pour les textes courts)
+
+
+        [Header("Window mode")]
+        [SerializeField] private WindowMode windowMode;
+        public Mode mode;    
 
         private string _currentGuid;
 
@@ -78,6 +83,7 @@ namespace Subtegral.DialogueSystem.Runtime
             }
 
             Proceed(startLink.TargetNodeGUID);
+            windowMode.InstantiateWindow(mode, dialogueText.transform.parent, dialogueText.text);
         }
 
         private static NodeLinkData GetStartLink(DialogueContainer container)
@@ -360,4 +366,4 @@ namespace Subtegral.DialogueSystem.Runtime
             };
         }
     }
-}
+

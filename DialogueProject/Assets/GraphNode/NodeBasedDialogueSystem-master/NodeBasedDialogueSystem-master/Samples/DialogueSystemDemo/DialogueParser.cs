@@ -12,7 +12,7 @@ namespace Subtegral.DialogueSystem.Runtime
     public class DialogueParser : MonoBehaviour
     {
         [Header("Settings")]
-        public Language currentLanguage = Language.French;
+        /*public Language currentLanguage = Language.French;*/
 
         [Header("References")]
         [SerializeField] private DialogueContainer dialogue;
@@ -43,7 +43,7 @@ namespace Subtegral.DialogueSystem.Runtime
 
             if (database != null)
             {
-                translatedText = database.GetTextByKey(rawKey.Trim(), currentLanguage);
+                /*translatedText = database.GetTextByKey(rawKey.Trim(), currentLanguage);*/
             }
             else
             {
