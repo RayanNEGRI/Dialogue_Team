@@ -15,12 +15,36 @@ MonoBehaviour:
   m_TableCollectionName: UI Tables
   m_TableCollectionNameGuidString: f2bbdbf01776620439b070408fa6d0fa
   m_Entries:
-  - m_Id: 104007134474240
+  - m_Id: 374028771676160
     m_Key: chx
     m_Metadata:
       m_Items: []
-  - m_Id: 104007176417280
+  - m_Id: 374028801036288
     m_Key: chx_2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230592
+    m_Key: chsrngrndn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230593
+    m_Key: chsrnpttnv
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230594
+    m_Key: lrmsttnc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230595
+    m_Key: lsntmr
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230596
+    m_Key: thsndsnn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230597
+    m_Key: lclps
     m_Metadata:
       m_Items: []
   m_Metadata:

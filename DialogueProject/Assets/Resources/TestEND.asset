@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
+  m_Name: TestEND
+  m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
+  NodeLinks:
+  - BaseNodeGUID: 42437dc8-e450-4458-99ed-fda6f9cacc51
+    TargetNodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    PortName: Next
+    PortId: start
+    PortLabel: Next
+    ConditionExpression: 
+  - BaseNodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    TargetNodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    PortName: chsrngrndn
+    PortId: b508e2f4-7b3a-4084-a225-6294cdfb17e6
+    PortLabel: chsrngrndn
+    ConditionExpression: 
+  - BaseNodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    TargetNodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    PortName: chsrnpttnv
+    PortId: c122142f-6e25-4b95-b3cf-68e1089a9bf8
+    PortLabel: chsrnpttnv
+    ConditionExpression: 
+  - BaseNodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    TargetNodeGUID: 7914c2b4-698e-4007-9080-973630aae09b
+    PortName: lrmsttnc
+    PortId: b802b442-3f00-47e7-bc5f-f179dd52b29b
+    PortLabel: lrmsttnc
+    ConditionExpression: 
+  - BaseNodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    TargetNodeGUID: edc001b4-ddcc-4f27-989a-817ef72d970a
+    PortName: lsntmr
+    PortId: d9cd92ec-8e02-42c9-8dfe-dae44ac890d3
+    PortLabel: lsntmr
+    ConditionExpression: 
+  - BaseNodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    TargetNodeGUID: 454e7ff1-6077-4b0e-9e6b-d8d77417cebe
+    PortName: thsndsnn
+    PortId: 6aff7bc6-bd8b-463b-bad6-380317dbfcd3
+    PortLabel: thsndsnn
+    ConditionExpression: 
+  - BaseNodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    TargetNodeGUID: 9f53cad1-4353-4332-8aab-64bb7330ebec
+    PortName: lclps
+    PortId: 28c465ba-56ac-491a-a1b2-2031647aa809
+    PortLabel: lclps
+    ConditionExpression: 
+  DialogueNodeData:
+  - NodeGUID: 8408197c-e9c5-41cd-978f-184e115136c1
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: sltprtvlmb
+    ConditionExpression: 
+    Position: {x: 229, y: 200}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 7914c2b4-698e-4007-9080-973630aae09b
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl
+    ConditionExpression: 
+    Position: {x: 1477, y: 91}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: edc001b4-ddcc-4f27-989a-817ef72d970a
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl_2
+    ConditionExpression: 
+    Position: {x: 1477, y: 277}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: a1a5ede7-4844-46b9-99b2-66feca406591
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tschslgrnd
+    ConditionExpression: 
+    Position: {x: 832, y: 119}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 9f53cad1-4353-4332-8aab-64bb7330ebec
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl_4
+    ConditionExpression: 
+    Position: {x: 1477, y: 597}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: c54fd93c-a590-42bf-9175-0db852be82b2
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: tschslgrnd
+    ConditionExpression: 
+    Position: {x: 832, y: 497}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  - NodeGUID: 454e7ff1-6077-4b0e-9e6b-d8d77417cebe
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl_3
+    ConditionExpression: 
+    Position: {x: 1477, y: 440}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  ExposedProperties: []
+  CommentBlockData: []

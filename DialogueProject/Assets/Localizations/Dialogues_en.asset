@@ -34,20 +34,49 @@ MonoBehaviour:
     m_Localized: hi
     m_Metadata:
       m_Items: []
-  - m_Id: 621770227994624
+  - m_Id: 946282328903680
     m_Localized: hello
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743360
+  - m_Id: 946282328903681
     m_Localized: welcome
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743362
+  - m_Id: 946282328903687
+    m_Localized: Thanks for buying RMS Titanic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903688
+    m_Localized: Thanks for buying Santa Maria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903689
+    m_Localized: Thanks for buying Thousand Sunny
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903690
+    m_Localized: Thanks for buying Calypso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903683
     m_Localized: goodbye
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743361
+  - m_Id: 946282328903682
     m_Localized: hi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903684
+    m_Localized: 'Hi pirate, here is my shop! We offer two types of ships: a big
+      but slow ship, or a small but faster one.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903685
+    m_Localized: You chose the big ship. I have two in stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903686
+    m_Localized: You chose the small ship. I have two in stock
     m_Metadata:
       m_Items: []
   references:

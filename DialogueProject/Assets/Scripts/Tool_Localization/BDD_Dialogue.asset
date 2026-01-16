@@ -20,7 +20,7 @@ MonoBehaviour:
     - languageCode: fr-FR
       text: bonjour
     - languageCode: es
-      text: "buen d\xEDa"
+      text: "buenos d\xEDas"
   - key: bnvn
     translations:
     - languageCode: en
@@ -45,3 +45,63 @@ MonoBehaviour:
       text: au revoir
     - languageCode: es
       text: "adi\xF3s"
+  - key: sltprtvlmb
+    translations:
+    - languageCode: en
+      text: 'Hi pirate, here is my shop! We offer two types of ships: a big but slow
+        ship, or a small but faster one.'
+    - languageCode: fr-FR
+      text: "Salut pirate voil\xE0 ma boutique ! On peut te proposer deux types de
+        navires : un grand navire mais lent ou un petit mais plus rapide"
+    - languageCode: es
+      text: "\xA1Hola, pirata! \xA1Aqu\xED est\xE1 mi tienda! Te podemos ofrecer
+        dos tipos de barcos: un barco grande pero lento, o uno peque\xF1o pero m\xE1s
+        r\xE1pido."
+  - key: tschslgrnd
+    translations:
+    - languageCode: en
+      text: You chose the big ship. I have two in stock
+    - languageCode: fr-FR
+      text: Tu as choisi le grand navire  Je t'en propose deux qui sont en stock
+    - languageCode: es
+      text: Has elegido el barco grande. Tengo dos en stock
+  - key: tschslpttn
+    translations:
+    - languageCode: en
+      text: You chose the small ship. I have two in stock
+    - languageCode: fr-FR
+      text: Tu as choisi le petit navire  Je t'en propose deux qui sont en stock
+    - languageCode: es
+      text: "Has elegido el barco peque\xF1o. Tengo dos en stock"
+  - key: mrcdvrchtl
+    translations:
+    - languageCode: en
+      text: Thanks for buying RMS Titanic
+    - languageCode: fr-FR
+      text: "Merci d'avoir achet\xE9 Le RMS Titanic"
+    - languageCode: es
+      text: Gracias por comprar el RMS Titanic
+  - key: mrcdvrchtl_2
+    translations:
+    - languageCode: en
+      text: Thanks for buying Santa Maria
+    - languageCode: fr-FR
+      text: "Merci d'avoir achet\xE9 La Santa Maria"
+    - languageCode: es
+      text: Gracias por comprar La Santa Maria
+  - key: mrcdvrchtl_3
+    translations:
+    - languageCode: en
+      text: Thanks for buying Thousand Sunny
+    - languageCode: fr-FR
+      text: "Merci d'avoir achet\xE9 Le Thousand Sunny"
+    - languageCode: es
+      text: Gracias por comprar el Thousand Sunny
+  - key: mrcdvrchtl_4
+    translations:
+    - languageCode: en
+      text: Thanks for buying Calypso
+    - languageCode: fr-FR
+      text: "Merci d'avoir achet\xE9 La Calypso"
+    - languageCode: es
+      text: Gracias por comprar el Calypso

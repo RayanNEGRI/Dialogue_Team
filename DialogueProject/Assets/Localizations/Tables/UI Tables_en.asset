@@ -26,12 +26,36 @@ MonoBehaviour:
     m_Localized: Choice 1
     m_Metadata:
       m_Items: []
-  - m_Id: 104007134474240
+  - m_Id: 374028805230592
+    m_Localized: Choose a Big Ship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230593
+    m_Localized: Choose a Small Ship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028771676160
     m_Localized: Choice 1
     m_Metadata:
       m_Items: []
-  - m_Id: 104007176417280
+  - m_Id: 374028801036288
     m_Localized: Choice 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230597
+    m_Localized: Calypso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230594
+    m_Localized: RMS Titanic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230595
+    m_Localized: "Santa Mar\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230596
+    m_Localized: Thousand Sunny
     m_Metadata:
       m_Items: []
   references:

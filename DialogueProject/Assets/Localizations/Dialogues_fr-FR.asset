@@ -210,20 +210,49 @@ MonoBehaviour:
     m_Localized: bonjour
     m_Metadata:
       m_Items: []
-  - m_Id: 621770227994624
-    m_Localized: bonjour
+  - m_Id: 946282328903690
+    m_Localized: "Merci d'avoir achet\xE9 La Calypso"
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743360
-    m_Localized: bienvenu
+  - m_Id: 946282328903687
+    m_Localized: "Merci d'avoir achet\xE9 Le RMS Titanic"
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743361
+  - m_Id: 946282328903689
+    m_Localized: "Merci d'avoir achet\xE9 Le Thousand Sunny"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903688
+    m_Localized: "Merci d'avoir achet\xE9 La Santa Maria"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903686
+    m_Localized: Tu as choisi le petit navire  Je t'en propose deux qui sont en stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903685
+    m_Localized: Tu as choisi le grand navire  Je t'en propose deux qui sont en stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903684
+    m_Localized: "Salut pirate voil\xE0 ma boutique ! On peut te proposer deux types
+      de navires : un grand navire mais lent ou un petit mais plus rapide"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903682
     m_Localized: salut
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743362
+  - m_Id: 946282328903683
     m_Localized: au revoir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903681
+    m_Localized: bienvenu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903680
+    m_Localized: bonjour
     m_Metadata:
       m_Items: []
   references:

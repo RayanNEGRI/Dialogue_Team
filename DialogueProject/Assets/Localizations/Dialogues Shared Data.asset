@@ -15,20 +15,48 @@ MonoBehaviour:
   m_TableCollectionName: Dialogues
   m_TableCollectionNameGuidString: e6e2bf121cc2deb4099984f23f50c0b7
   m_Entries:
-  - m_Id: 621770227994624
+  - m_Id: 946282328903680
     m_Key: bnjr
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743360
+  - m_Id: 946282328903681
     m_Key: bnvn
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743361
+  - m_Id: 946282328903682
     m_Key: slt
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743362
+  - m_Id: 946282328903683
     m_Key: rvr
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903684
+    m_Key: sltprtvlmb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903685
+    m_Key: tschslgrnd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903686
+    m_Key: tschslpttn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903687
+    m_Key: mrcdvrchtl
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903688
+    m_Key: mrcdvrchtl_2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903689
+    m_Key: mrcdvrchtl_3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903690
+    m_Key: mrcdvrchtl_4
     m_Metadata:
       m_Items: []
   m_Metadata:

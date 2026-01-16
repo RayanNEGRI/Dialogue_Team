@@ -42,12 +42,36 @@ MonoBehaviour:
     m_Localized: Choix 1
     m_Metadata:
       m_Items: []
-  - m_Id: 104007134474240
-    m_Localized: Choix 1
+  - m_Id: 374028801036288
+    m_Localized: Choix2
     m_Metadata:
       m_Items: []
-  - m_Id: 104007176417280
-    m_Localized: Choix 2
+  - m_Id: 374028771676160
+    m_Localized: Choix1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230592
+    m_Localized: Choisir un Grand Navire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230593
+    m_Localized: Choisir un Petit Navire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230594
+    m_Localized: Le RMS Titanic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230595
+    m_Localized: La Santa Maria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230596
+    m_Localized: Thousand Sunny
+    m_Metadata:
+      m_Items: []
+  - m_Id: 374028805230597
+    m_Localized: La Calypso
     m_Metadata:
       m_Items: []
   references:

@@ -34,20 +34,50 @@ MonoBehaviour:
     m_Localized: hola
     m_Metadata:
       m_Items: []
-  - m_Id: 621770227994624
-    m_Localized: "buen d\xEDa"
+  - m_Id: 946282328903680
+    m_Localized: "buenos d\xEDas"
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743360
+  - m_Id: 946282328903681
     m_Localized: bienvenido
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743362
+  - m_Id: 946282328903687
+    m_Localized: Gracias por comprar el RMS Titanic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903688
+    m_Localized: Gracias por comprar La Santa Maria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903689
+    m_Localized: Gracias por comprar el Thousand Sunny
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903690
+    m_Localized: Gracias por comprar el Calypso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903683
     m_Localized: "adi\xF3s"
     m_Metadata:
       m_Items: []
-  - m_Id: 621770265743361
+  - m_Id: 946282328903682
     m_Localized: hola
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903684
+    m_Localized: "\xA1Hola, pirata! \xA1Aqu\xED est\xE1 mi tienda! Te podemos ofrecer
+      dos tipos de barcos: un barco grande pero lento, o uno peque\xF1o pero m\xE1s
+      r\xE1pido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903685
+    m_Localized: Has elegido el barco grande. Tengo dos en stock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946282328903686
+    m_Localized: "Has elegido el barco peque\xF1o. Tengo dos en stock"
     m_Metadata:
       m_Items: []
   references:

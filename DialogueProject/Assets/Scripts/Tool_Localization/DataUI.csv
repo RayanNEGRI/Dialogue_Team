@@ -1,3 +1,9 @@
 id,key,fr
-1,c1,Choix 1
-2,c2,Choix 2
+1,,Choix1
+2,,Choix2
+3,,Choisir un Grand Navire
+4,,Choisir un Petit Navire
+5,,Le RMS Titanic
+6,,La Santa María
+7,,Thousand Sunny
+8,,La Calypso
