@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b3fd9154634ebdb8c8a48960b9a16a, type: 3}
+  m_Name: test
+  m_EditorClassIdentifier: Assembly-CSharp::Subtegral.DialogueSystem.DataContainers.DialogueContainer
+  NodeLinks:
+  - BaseNodeGUID: 91f7111d-0388-4af1-8ec5-ab56b4b6d768
+    TargetNodeGUID: 064265c8-638a-4a67-b0b6-c2829169eefc
+    PortName: Next
+    PortId: start
+    PortLabel: Next
+    ConditionExpression: 
+  - BaseNodeGUID: 064265c8-638a-4a67-b0b6-c2829169eefc
+    TargetNodeGUID: 
+    PortName: chssngrndb
+    PortId: 7009ec94-9c12-4856-a4e9-2cc42c1ae2f7
+    PortLabel: chssngrndb
+    ConditionExpression: 
+  - BaseNodeGUID: 064265c8-638a-4a67-b0b6-c2829169eefc
+    TargetNodeGUID: 
+    PortName: chssnpttbt
+    PortId: 2d5744f4-1316-418d-a559-4c6181e8d975
+    PortLabel: chssnpttbt
+    ConditionExpression: 
+  DialogueNodeData:
+  - NodeGUID: 064265c8-638a-4a67-b0b6-c2829169eefc
+    NodeType: 0
+    DebugLabel: 
+    DialogueText: mrcdvrchtl
+    ConditionExpression: 
+    Position: {x: 296, y: 200}
+    Speaker: {fileID: 0}
+    MoodKey: 
+  ExposedProperties: []
+  CommentBlockData: []

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
+using TMPro; 
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 using Subtegral.DialogueSystem.DataContainers;
 
-/*namespace Subtegral.DialogueSystem.Runtime*/
-
+namespace Subtegral.DialogueSystem.Runtime
+{
     public class DialogueParser : MonoBehaviour
     {
         [Header("Settings")]
@@ -22,15 +22,9 @@ using Subtegral.DialogueSystem.DataContainers;
         [SerializeField] private Button choicePrefab;
         [SerializeField] private Transform buttonContainer;
 
-        // --- AJOUT : Paramètres de taille de police ---
         [Header("Text Auto-Sizing")]
-        [SerializeField] private float minFontSize = 20f; // Taille minimum (pour ne pas devenir illisible)
-        [SerializeField] private float maxFontSize = 72f; // Taille maximum (pour les textes courts)
-
-
-        [Header("Window mode")]
-        [SerializeField] private WindowMode windowMode;
-        public Mode mode;    
+        [SerializeField] private float minFontSize = 20f;
+        [SerializeField] private float maxFontSize = 72f;
 
         private string _currentGuid;
 
@@ -47,6 +41,7 @@ using Subtegral.DialogueSystem.DataContainers;
         private void OnLocaleChanged(Locale locale)
         {
             if (dialogue == null) return;
+
             if (string.IsNullOrEmpty(_currentGuid)) return;
 
             var node = dialogue.DialogueNodeData.FirstOrDefault(n => n != null && n.NodeGUID == _currentGuid);
@@ -61,19 +56,14 @@ using Subtegral.DialogueSystem.DataContainers;
                 return;
             }
 
-            // --- MODIFICATION ICI : Configuration Auto-Size ---
+            // Configuration Auto-Size & Wrapping
             if (dialogueText != null)
             {
-                // Active l'ajustement automatique de la taille
                 dialogueText.enableAutoSizing = true;
-                // Définit la limite basse (pour que ça reste lisible)
                 dialogueText.fontSizeMin = minFontSize;
-                // Définit la limite haute (pour les titres ou mots seuls)
                 dialogueText.fontSizeMax = maxFontSize;
-                // S'assure que le texte revient à la ligne
-                dialogueText.enableWordWrapping = true;
+                dialogueText.textWrappingMode = TextWrappingModes.Normal;
             }
-            // --------------------------------------------------
 
             var startLink = GetStartLink(dialogue);
             if (startLink == null || string.IsNullOrEmpty(startLink.TargetNodeGUID))
@@ -83,7 +73,6 @@ using Subtegral.DialogueSystem.DataContainers;
             }
 
             Proceed(startLink.TargetNodeGUID);
-            windowMode.InstantiateWindow(mode, dialogueText.transform.parent, dialogueText.text);
         }
 
         private static NodeLinkData GetStartLink(DialogueContainer container)
@@ -172,7 +161,6 @@ using Subtegral.DialogueSystem.DataContainers;
         {
             ClearButtons();
             if (buttonContainer != null) buttonContainer.gameObject.SetActive(false);
-            _currentGuid = null;
         }
 
         private void ClearButtons()
@@ -366,4 +354,4 @@ using Subtegral.DialogueSystem.DataContainers;
             };
         }
     }
-
+}

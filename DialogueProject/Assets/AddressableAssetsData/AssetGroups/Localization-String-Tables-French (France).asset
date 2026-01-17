@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Localization-String-Tables-French (France) (fr-FR)
+  m_Name: Localization-String-Tables-French (France)
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
-  m_GroupName: Localization-String-Tables-French (France) (fr-FR)
-  m_GUID: 118365be50fa5594f8ec145a574138f2
+  m_GroupName: Localization-String-Tables-French (France)
+  m_GUID: 3ff5cd510953cdf41a56db2992b252ba
   m_SerializeEntries: []
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: a7eb0f1b7a7e5fc47b60e6388151c397, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 5dcc2b2658b0d3c49a28ae13bf15e059, type: 2}
-    - {fileID: 11400000, guid: 999b6e5b4a1a0dd49880afcbe56d04d7, type: 2}
+    - {fileID: 11400000, guid: ba6cd7c471fa2d94795dd0c5324aa187, type: 2}
+    - {fileID: 11400000, guid: b44b27721f51abe47ae7b9e606caca2b, type: 2}
