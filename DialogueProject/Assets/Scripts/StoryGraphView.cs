@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 using Subtegral.DialogueSystem.DataContainers;
 
 namespace Subtegral.DialogueSystem.Editor
@@ -164,6 +165,60 @@ namespace Subtegral.DialogueSystem.Editor
 
         private void BuildDialogueNodeUI(DialogueNode node)
         {
+            var guidsSpeaker = AssetDatabase.FindAssets("t:Speaker_Data");
+            UnityEngine.Object speakerDbObj = null;
+            if (guidsSpeaker != null && guidsSpeaker.Length > 0)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guidsSpeaker[0]);
+                speakerDbObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+            }
+
+            var speakerNames = AssetKeyProvider.TryGetKeysFromSerializedArrayStringField(speakerDbObj, "Speakers", "speakerName");
+
+            if (speakerNames.Count > 0)
+            {
+                var currentSpeaker = node.SpeakerName;
+                if (string.IsNullOrEmpty(currentSpeaker) || !speakerNames.Contains(currentSpeaker))
+                {
+                    currentSpeaker = speakerNames[0];
+                    node.SpeakerName = currentSpeaker;
+                }
+
+                var speakerPopup = new PopupField<string>("Speaker", speakerNames, currentSpeaker);
+                speakerPopup.RegisterValueChangedCallback(evt => node.SpeakerName = evt.newValue);
+                node.mainContainer.Add(speakerPopup);
+            }
+            else
+            {
+                var speakerTxt = new TextField("Speaker Name");
+                speakerTxt.SetValueWithoutNotify(node.SpeakerName);
+                speakerTxt.RegisterValueChangedCallback(evt => node.SpeakerName = evt.newValue);
+                node.mainContainer.Add(speakerTxt);
+            }
+
+            ModeType currentModeEnum = ModeType.Bulle; 
+            if (!string.IsNullOrEmpty(node.Mode))
+            {
+                if (Enum.TryParse(node.Mode, out ModeType parsedMode))
+                {
+                    currentModeEnum = parsedMode;
+                }
+            }
+            else
+            {
+                node.Mode = currentModeEnum.ToString();
+            }
+
+            var modeField = new EnumField("Mode", currentModeEnum);
+
+            modeField.RegisterValueChangedCallback(evt =>
+            {
+                var selectedEnum = (ModeType)evt.newValue;
+                node.Mode = selectedEnum.ToString();
+            });
+
+            node.mainContainer.Add(modeField);
+
             var guids = AssetDatabase.FindAssets("t:BDD_Dialogue");
             UnityEngine.Object bddObj = null;
             if (guids != null && guids.Length > 0)
@@ -507,28 +562,62 @@ namespace Subtegral.DialogueSystem.Editor
 
         public void RefreshNodeFields(DialogueNode node)
         {
-            foreach (var tf in node.mainContainer.Query<TextField>().ToList())
+            var popups = node.mainContainer.Query<PopupField<string>>().ToList();
+            var textFields = node.mainContainer.Query<TextField>().ToList();
+            var enumFields = node.mainContainer.Query<EnumField>().ToList();
+
+            var speakerPopup = popups.FirstOrDefault(p => p.label == "Speaker");
+            if (speakerPopup != null)
+            {
+                var desired = node.SpeakerName ?? "";
+                if (!string.IsNullOrEmpty(desired) && !speakerPopup.choices.Contains(desired))
+                    speakerPopup.choices.Insert(0, desired);
+
+                if (string.IsNullOrEmpty(desired) && speakerPopup.choices.Count > 0)
+                    desired = speakerPopup.choices[0];
+
+                speakerPopup.SetValueWithoutNotify(desired);
+                node.SpeakerName = desired;
+            }
+            else
+            {
+                var tf = textFields.FirstOrDefault(t => t.label == "Speaker Name");
+                if (tf != null) tf.SetValueWithoutNotify(node.SpeakerName);
+            }
+
+            var modeEnumField = enumFields.FirstOrDefault(e => e.label == "Mode");
+            if (modeEnumField != null)
+            {
+                ModeType current = ModeType.Bulle; 
+                if (!string.IsNullOrEmpty(node.Mode))
+                {
+                    Enum.TryParse(node.Mode, out current);
+                }
+                modeEnumField.SetValueWithoutNotify(current);
+            }
+
+            foreach (var tf in textFields)
             {
                 if (tf.label == "Debug Label") tf.SetValueWithoutNotify(node.DebugLabel ?? "");
                 else if (tf.label == "Branch Condition") tf.SetValueWithoutNotify(node.ConditionExpression ?? "");
             }
 
-            var popup = node.mainContainer.Q<PopupField<string>>();
-            if (popup != null)
+            var dialoguePopup = popups.FirstOrDefault(p => p.label == "Clé Dialogue");
+            if (dialoguePopup != null)
             {
                 var desired = node.DialogueText ?? "";
-                if (!string.IsNullOrEmpty(desired) && !popup.choices.Contains(desired))
-                    popup.choices.Insert(0, desired);
+                if (!string.IsNullOrEmpty(desired) && !dialoguePopup.choices.Contains(desired))
+                    dialoguePopup.choices.Insert(0, desired);
 
-                if (string.IsNullOrEmpty(desired) && popup.choices.Count > 0)
-                    desired = popup.choices[0];
+                if (string.IsNullOrEmpty(desired) && dialoguePopup.choices.Count > 0)
+                    desired = dialoguePopup.choices[0];
 
-                popup.SetValueWithoutNotify(desired);
+                dialoguePopup.SetValueWithoutNotify(desired);
                 node.DialogueText = desired;
             }
             else
             {
-                foreach (var textF in node.mainContainer.Query<TextField>().ToList())
+                foreach (var textF in textFields)
                 {
                     if (textF.label == "Dialogue Text") textF.SetValueWithoutNotify(node.DialogueText ?? "");
                 }

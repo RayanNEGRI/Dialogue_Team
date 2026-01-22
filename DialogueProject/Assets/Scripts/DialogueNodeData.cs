@@ -12,7 +12,7 @@ namespace Subtegral.DialogueSystem.DataContainers
         public string DialogueText;
         public string ConditionExpression;
         public Vector2 Position;
-        public ScriptableObject Speaker;
-        public string MoodKey;
+        public string SpeakerName;
+        public string Mode;
     }
 }

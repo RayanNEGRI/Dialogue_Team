@@ -15,6 +15,9 @@ namespace Subtegral.DialogueSystem.Editor
         public string DialogueText;
         public string ConditionExpression;
 
+        public string SpeakerName;
+        public string Mode; 
+
         public Dictionary<string, ChoicePortData> Ports = new Dictionary<string, ChoicePortData>();
 
         public class ChoicePortData

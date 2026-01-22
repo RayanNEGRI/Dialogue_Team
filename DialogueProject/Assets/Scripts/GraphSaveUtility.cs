@@ -60,7 +60,6 @@ namespace Subtegral.DialogueSystem.Editor
             {
                 if (node == null || node.EntyPoint) continue;
 
-                // --- Conservation logique Script A (Gestion du type End) ---
                 var nodeType = node.NodeType == DialogueNodeType.End ? DialogueNodeType.Dialogue : node.NodeType;
 
                 asset.DialogueNodeData.Add(new DialogueNodeData
@@ -70,7 +69,9 @@ namespace Subtegral.DialogueSystem.Editor
                     DebugLabel = node.DebugLabel ?? "",
                     DialogueText = node.DialogueText ?? "",
                     ConditionExpression = node.ConditionExpression ?? "",
-                    Position = node.GetPosition().position
+                    Position = node.GetPosition().position,
+                    SpeakerName = node.SpeakerName ?? "",
+                    Mode = node.Mode ?? "" 
                 });
             }
         }
@@ -106,12 +107,9 @@ namespace Subtegral.DialogueSystem.Editor
                     var portId = port.userData as string;
                     if (string.IsNullOrEmpty(portId)) continue;
 
-                    // --- FUSION ICI : Utilisation de la logique B (Lecture UI) dans la boucle A ---
-
                     string labelValue = "";
                     string condValue = "";
 
-                    // 1. Priorité absolue : Lire le Menu Déroulant (Script B Fix)
                     var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
                     if (popup != null)
                     {
@@ -119,19 +117,16 @@ namespace Subtegral.DialogueSystem.Editor
                     }
                     else
                     {
-                        // 2. Sinon lire le champ texte
                         var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
                         if (tf != null) labelValue = tf.value;
                     }
 
-                    // Si jamais l'UI est vide (ce qui ne devrait pas arriver), fallback sur la donnée interne (Sécurité Script A)
                     if (string.IsNullOrEmpty(labelValue))
                     {
                         node.Ports.TryGetValue(portId, out var internalData);
                         if (internalData != null) labelValue = internalData.Label;
                     }
 
-                    // Récupération condition
                     var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
                     if (condTf != null) condValue = condTf.value;
                     else
@@ -222,7 +217,6 @@ namespace Subtegral.DialogueSystem.Editor
             {
                 if (data == null || string.IsNullOrEmpty(data.NodeGUID)) continue;
 
-                // --- Conservation logique Script A ---
                 var t = data.NodeType == DialogueNodeType.End ? DialogueNodeType.Dialogue : data.NodeType;
 
                 var node = _graphView.CreateNode(t.ToString(), data.Position, t);
@@ -231,6 +225,8 @@ namespace Subtegral.DialogueSystem.Editor
                 node.DebugLabel = data.DebugLabel ?? "";
                 node.DialogueText = data.DialogueText ?? "";
                 node.ConditionExpression = data.ConditionExpression ?? "";
+                node.SpeakerName = data.SpeakerName ?? "";
+                node.Mode = data.Mode ?? ""; 
 
                 _graphView.RefreshNodeFields(node);
 
@@ -249,7 +245,6 @@ namespace Subtegral.DialogueSystem.Editor
                         node.Ports[portId].Label = link.PortLabel ?? "";
                         node.Ports[portId].Condition = link.ConditionExpression ?? "";
 
-                        // --- AJOUT IMPORTANT : Force update UI (Script B) ---
                         ForcePortUI(node, portId, link.PortLabel ?? "", link.ConditionExpression ?? "");
                     }
                     continue;
@@ -268,13 +263,11 @@ namespace Subtegral.DialogueSystem.Editor
 
                     _graphView.AddChoicePort(node, portId, true);
 
-                    // --- AJOUT IMPORTANT : Force update UI (Script B) ---
                     ForcePortUI(node, portId, link.PortLabel ?? "", link.ConditionExpression ?? "");
                 }
             }
         }
 
-        // --- AJOUT METHODE SCRIPT B (Nécessaire pour le chargement visuel correct) ---
         private void ForcePortUI(DialogueNode node, string portId, string label, string cond)
         {
             var port = node.outputContainer.Children().OfType<Port>()
@@ -282,21 +275,18 @@ namespace Subtegral.DialogueSystem.Editor
 
             if (port == null) return;
 
-            // 1. Update PopupField
             var popup = port.contentContainer.Q<PopupField<string>>(StoryGraphView.ChoiceLabelFieldName);
             if (popup != null)
             {
                 popup.value = label;
             }
 
-            // 2. Update TextField
             var tf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceLabelFieldName);
             if (tf != null)
             {
                 tf.SetValueWithoutNotify(label);
             }
 
-            // 3. Update Condition
             var condTf = port.contentContainer.Q<TextField>(StoryGraphView.ChoiceCondFieldName);
             if (condTf != null)
             {
